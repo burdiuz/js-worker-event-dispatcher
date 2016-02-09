@@ -4,22 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EventDispatcher Example</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-  <script type="text/javascript" src="../dist/event-dispatcher.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+          integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+          crossorigin="anonymous"></script>
+  <script type="text/javascript" src="../bower_components/event-dispatcher/dist/event-dispatcher.js"></script>
+  <script type="text/javascript" src="../dist/worker-event-dispatcher.js"></script>
   <script type="text/javascript">
+    var workerApi = new WorkerEventDispatcher('worker.js');
+    // Event type string may be of any format, WorkerEventDispatcher does not depend on it.
+    // I've used "namespace:local" string
+    workerApi.addEventListener('time:response', function(event) {
+      $('.time').val(event.data);
+    });
+
     var controller = {
       start: function() {
-        if(this.intervalId){
+        if (this.intervalId) {
           this.stop();
         }
-        this.intervalId = setInterval(function(){
-          controller.tick();
+        this.intervalId = setInterval(function() {
+          workerApi.dispatchEvent('time:request');
         }, 250);
-      },
-      tick: function() {
-        this.dispatchEvent('time', Date.now());
       },
       stop: function() {
         clearInterval(this.intervalId);
@@ -29,17 +37,13 @@
     EventDispatcher.apply(controller);
 
     $(document).ready(function() {
-      $('.btn-primary').on('click', function(event){
+      $('.btn-primary').on('click', function(event) {
         controller.start();
         event.preventDefault();
       });
-      $('.btn-default').on('click', function(event){
+      $('.btn-default').on('click', function(event) {
         controller.stop();
         event.preventDefault();
-      });
-
-      controller.addEventListener('time', function(event){
-        $('.time').val(event.data);
       });
     });
   </script>
