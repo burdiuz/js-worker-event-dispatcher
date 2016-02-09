@@ -6,32 +6,57 @@ function WorkerEventDispatcher(worker) {
   /**
    * @type {EventDispatcher}
    */
-  var _dispatcher = new EventDispatcher();
+  var _sender = new EventDispatcher();
+  var _receiver = new EventDispatcher();
 
   function messageHandler(message) {
-	  if(message && message.hasOwnProperty('type')){
-		  _dispatcher.call(message.type, message);
-	  }
+    try{
+      var event = JSON.parse(message.data);
+    }catch(error){
+      // this isn't an event we are waiting for.
+      return;
+    }
+    if (EventDispatcher.isObject(event) && event.hasOwnProperty('type')) {
+      _receiver.dispatchEvent(event);
+    }
   }
 
-  function dispatchEvent(event) {
-	  worker.postMessage(event);
+  function dispatchEvent(event, data, transferList) {
+    event = EventDispatcher.getEvent(event, data);
+    var eventJson = JSON.stringify(event);
+    worker.postMessage(eventJson, transferList);
+    _sender.dispatchEvent(event);
   }
 
-  function terminate(){
-	  return worker.terminate();
+  function terminate() {
+    return worker.terminate();
   }
 
-  this.addEventListener = _dispatcher.addEventListener;
-  this.hasEventListener = _dispatcher.hasEventListener;
-  this.removeEventListener = _dispatcher.removeEventListener;
-  this.removeAllEventListeners = _dispatcher.removeAllEventListeners;
+  this.addEventListener = _receiver.addEventListener;
+  this.hasEventListener = _receiver.hasEventListener;
+  this.removeEventListener = _receiver.removeEventListener;
+  this.removeAllEventListeners = _receiver.removeAllEventListeners;
   this.dispatchEvent = dispatchEvent;
   this.terminate = terminate;
 
-  if(!(worker instanceof Worker)){
-	  worker = new Worker(String(worker));
+  Object.defineProperties(this, {
+    sender: {
+      value: _sender,
+      enumerable: false
+    },
+    receiver: {
+      value: _receiver,
+      enumerable: false
+    }
+  });
+
+  if (!EventDispatcher.isObject(worker)) {
+    worker = new Worker(String(worker));
   }
 
   worker.addEventListener('message', messageHandler);
 }
+
+WorkerEventDispatcher.self = function() {
+  return new WorkerEventDispatcher(self);
+};
