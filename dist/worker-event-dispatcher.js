@@ -29,11 +29,16 @@
     var _receiver = new EventDispatcher();
   
     function messageHandler(message) {
-      try{
-        var event = JSON.parse(message.data);
-      }catch(error){
-        // this isn't an event we are waiting for.
-        return;
+      var event;
+      if (EventDispatcher.isObject(message.data)) {
+        event = message.data;
+      } else {
+        try {
+          event = JSON.parse(message.data);
+        } catch (error) {
+          // this isn't an event we are waiting for.
+          return;
+        }
       }
       if (EventDispatcher.isObject(event) && event.hasOwnProperty('type')) {
         _receiver.dispatchEvent(event);
@@ -42,7 +47,12 @@
   
     function dispatchEvent(event, data, transferList) {
       event = EventDispatcher.getEvent(event, data);
-      var eventJson = JSON.stringify(event);
+      var eventJson;
+      if (event.hasOwnProperty('toJSON') && typeof(event.toJSON) === 'function') {
+        eventJson = event.toJSON();
+      } else {
+        eventJson = JSON.stringify(event);
+      }
       worker.postMessage(eventJson, transferList);
       _sender.dispatchEvent(event);
     }
