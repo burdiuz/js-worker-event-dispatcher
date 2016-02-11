@@ -3,6 +3,7 @@
  */
 importScripts(
   '../bower_components/event-dispatcher/dist/event-dispatcher.js',
+  '../bower_components/messageport-event-dispatcher/dist/messageport-event-dispatcher.js',
   '../dist/worker-event-dispatcher.js'
 );
 var api = WorkerEventDispatcher.self();

@@ -12,7 +12,8 @@
  *      shared self -- W only
  *      shared event -- R only
  */
-
+var NOINIT = {};
+/*
 function WorkerEvent(type, data) {
   EventDispatcher.Event.call(this, type, data);
 }
@@ -38,7 +39,7 @@ Object.defineProperties(WorkerEvent, {
     value: 'worker:offline'
   }
 });
-
+*/
 var WorkerType = {};
 Object.defineProperties(WorkerType, {
   WEB_WORKER: {
@@ -68,11 +69,12 @@ function WorkerMessenger(port) {
   }
 
   MessagePortDispatcher.call(this, port, postMessageHandler);
-
+/*
   port.addEventListener('error', WorkerEvent.createHandler(WorkerEvent.ERROR, this.receiver));
   port.addEventListener('languagechange', WorkerEvent.createHandler(WorkerEvent.LANGUAGECHANGE, this.receiver));
   port.addEventListener('online', WorkerEvent.createHandler(WorkerEvent.ONLINE, this.receiver));
   port.addEventListener('offline', WorkerEvent.createHandler(WorkerEvent.OFFLINE, this.receiver));
+  */
 }
 
 /**
@@ -117,7 +119,6 @@ function ServerEventDispatcher(worker) {
 
   WorkerMessenger.call(this, worker);
 
-  worker = WorkerEventDispatcher.getWorkerFacade(worker);
   worker.addEventListener('connect', connectHandler);
   worker.addEventListener('message', WorkerEvent.createHandler(WorkerEvent.MESSAGE, _receiver));
 }
@@ -159,7 +160,7 @@ function WebWorkerEventDispatcher(worker) {
     _worker = new Worker(String(worker));
   }
 
-  WorkerMessenger.call(this, worker);
+  WorkerMessenger.call(this, _worker);
 
   function terminate() {
     return _worker.terminate();
@@ -170,8 +171,6 @@ function WebWorkerEventDispatcher(worker) {
 WebWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
 WebWorkerEventDispatcher.prototype.constructor = WebWorkerEventDispatcher;
 
-
-var NOINIT = {};
 /**
  *
  * @param worker
@@ -180,11 +179,11 @@ var NOINIT = {};
  */
 function WorkerEventDispatcher(worker) {
   if (worker !== NOINIT) {
-    WebWorkerEventDispatcher.call(worker);
+    WebWorkerEventDispatcher.call(this, worker);
   }
 }
 
-WorkerEventDispatcher.WorkerEvent = WorkerEvent;
+//WorkerEventDispatcher.WorkerEvent = WorkerEvent;
 WorkerEventDispatcher.WorkerType = WorkerType;
 
 WorkerEventDispatcher.create = function(target, type) {
@@ -207,44 +206,6 @@ WorkerEventDispatcher.create = function(target, type) {
   return dispatcher;
 }
 
-WorkerEventDispatcher.toJSON = function(object) {
-  var objectJson;
-  if (object.hasOwnProperty('toJSON') && typeof(object.toJSON) === 'function') {
-    objectJson = event.toJSON();
-  } else {
-    objectJson = JSON.stringify(event);
-  }
-  return objectJson;
-};
-
-WorkerEventDispatcher.fromJSON = function(data) {
-  var object; // keep it undefined in case of error
-  if (EventDispatcher.isObject(data)) {
-    object = data;
-  } else {
-    try {
-      object = JSON.parse(data);
-    } catch (error) {
-      // this isn't an event we are waiting for.
-    }
-    return object;
-  }
-};
-
 WorkerEventDispatcher.self = function() {
   return new WorkerEventDispatcher(self);
-};
-
-WorkerEventDispatcher.getWorkerType = function(object) {
-  var type = null;
-  if (object instanceof SharedWorker) {
-    type = WorkerType.SHARED_WORKER;
-  } else if (object instanceof SharedWorker) {
-    type = WorkerType.WEB_WORKER;
-  } else if (object instanceof Event) {
-    type = WorkerType.CLIENT;
-  } else if (object && typeof(object.postMessage) === 'function' && typeof(object.addEventListener) === 'function') {
-    type = WorkerType.PORT;
-  }
-  return type;
 };
