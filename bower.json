@@ -41,7 +41,8 @@
     "url": "git://github.com/burdiuz/js-worker-event-dispatcher.git"
   },
   "dependencies": {
-	"event-dispatcher": "git://github.com/burdiuz/js-event-dispatcher.git"
+	"event-dispatcher": "git://github.com/burdiuz/js-event-dispatcher.git",
+    "messageport-event-dispatcher": "git://github.com/burdiuz/js-messageport-event-dispatcher.git"
   },
   "devDependencies": {
   }

@@ -2,71 +2,249 @@
  * Created by Oleg Galaburda on 09.02.16.
  */
 
-function WorkerEventDispatcher(worker) {
-  /**
-   * @type {EventDispatcher}
-   */
-  var _sender = new EventDispatcher();
-  var _receiver = new EventDispatcher();
+/* TODOs
+ * 1. implement transferList getter on passed event
+ * 2. add SharedWebWorker suppor, add connect event handler
+ * 3. WorkerEventDispatcher should become base class for workers and have static factory method to create different types ofdispatchers depending on worker type.
+ *      web worker UI -- R/W
+ *      web worker self -- R/W
+ *      shared UI -- R/W
+ *      shared self -- W only
+ *      shared event -- R only
+ */
 
-  function messageHandler(message) {
-    var event;
-    if (EventDispatcher.isObject(message.data)) {
-      event = message.data;
-    } else {
-      try {
-        event = JSON.parse(message.data);
-      } catch (error) {
-        // this isn't an event we are waiting for.
-        return;
-      }
+function WorkerEvent(type, data) {
+  EventDispatcher.Event.call(this, type, data);
+}
+WorkerEvent.createHandler = function(type, messenger) {
+  return function(event) {
+    if (dispatcher.hasEventListener(type)) {
+      dispatcher.dispatchEvent(new WorkerEvent(type, event));
     }
-    if (EventDispatcher.isObject(event) && event.hasOwnProperty('type')) {
-      _receiver.dispatchEvent(event);
+  }
+};
+
+Object.defineProperties(WorkerEvent, {
+  ERROR: {
+    value: 'worker:error'
+  },
+  LANGUAGECHANGE: {
+    value: 'worker:languagechange'
+  },
+  ONLINE: {
+    value: 'worker:online'
+  },
+  OFFLINE: {
+    value: 'worker:offline'
+  }
+});
+
+var WorkerType = {};
+Object.defineProperties(WorkerType, {
+  WEB_WORKER: {
+    value: 'web'
+  },
+  SHARED_WORKER: {
+    value: 'shared'
+  },
+  SHARED_WORKER_SERVER: {
+    value: 'sharedServer'
+  },
+  SHARED_WORKER_CLIENT: {
+    value: 'sharedClient'
+  }
+});
+
+/**
+ *
+ * @param port {Worker|MessagePort}
+ * @extends MessagePortDispatcher
+ * @constructor
+ */
+function WorkerMessenger(port) {
+
+  function postMessageHandler(data, transferList) {
+    port.postMessage(data, transferList);
+  }
+
+  MessagePortDispatcher.call(this, port, postMessageHandler);
+
+  port.addEventListener('error', WorkerEvent.createHandler(WorkerEvent.ERROR, this.receiver));
+  port.addEventListener('languagechange', WorkerEvent.createHandler(WorkerEvent.LANGUAGECHANGE, this.receiver));
+  port.addEventListener('online', WorkerEvent.createHandler(WorkerEvent.ONLINE, this.receiver));
+  port.addEventListener('offline', WorkerEvent.createHandler(WorkerEvent.OFFLINE, this.receiver));
+}
+
+/**
+ *
+ * @param worker {SharedWorker}
+ * @extends WorkerMessenger
+ * @constructor
+ */
+function SharedWorkerEventDispatcher(worker) {
+  function start() {
+    worker.port.start();
+  }
+
+  function close() {
+    worker.port.close();
+  }
+
+  WorkerMessenger.call(this, worker.port);
+
+  this.start = start;
+  this.close = close;
+}
+SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
+
+/**
+ *
+ * @param worker
+ * @extends WorkerMessenger
+ * @constructor
+ */
+function ServerEventDispatcher(worker) {
+
+  var _facade = worker.port;
+
+  function connectHandler(event) {
+    var target;
+    if (this.receiver.hasEventListener('worker:connect')) {
+      target = event.source || event.ports[0];
     }
   }
 
-  function dispatchEvent(event, data, transferList) {
-    event = EventDispatcher.getEvent(event, data);
-    var eventJson;
-    if (event.hasOwnProperty('toJSON') && typeof(event.toJSON) === 'function') {
-      eventJson = event.toJSON();
-    } else {
-      eventJson = JSON.stringify(event);
-    }
-    worker.postMessage(eventJson, transferList);
-    _sender.dispatchEvent(event);
+  WorkerMessenger.call(this, worker);
+
+  worker = WorkerEventDispatcher.getWorkerFacade(worker);
+  worker.addEventListener('connect', connectHandler);
+  worker.addEventListener('message', WorkerEvent.createHandler(WorkerEvent.MESSAGE, _receiver));
+}
+ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+ServerEventDispatcher.prototype.constructor = ServerEventDispatcher;
+
+/**
+ * @param port {MessagePort}
+ * @extends WorkerMessenger
+ * @constructor
+ */
+function ClientEventDispatcher(port) {
+  function start() {
+    port.start();
   }
 
-  function terminate() {
-    return worker.terminate();
+  function close() {
+    port.close();
   }
 
-  this.addEventListener = _receiver.addEventListener;
-  this.hasEventListener = _receiver.hasEventListener;
-  this.removeEventListener = _receiver.removeEventListener;
-  this.removeAllEventListeners = _receiver.removeAllEventListeners;
-  this.dispatchEvent = dispatchEvent;
-  this.terminate = terminate;
+  WorkerMessenger.call(this, port);
 
-  Object.defineProperties(this, {
-    sender: {
-      value: _sender,
-      enumerable: false
-    },
-    receiver: {
-      value: _receiver,
-      enumerable: false
-    }
-  });
+  this.start = start;
+  this.close = close;
+}
+ClientEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+ClientEventDispatcher.prototype.constructor = ClientEventDispatcher;
+
+/**
+ *
+ * @param worker {Worker|String}
+ * @extends WorkerMessenger
+ * @constructor
+ */
+function WebWorkerEventDispatcher(worker) {
+  var _worker = worker || self;
 
   if (!EventDispatcher.isObject(worker)) {
-    worker = new Worker(String(worker));
+    _worker = new Worker(String(worker));
   }
 
-  worker.addEventListener('message', messageHandler);
+  WorkerMessenger.call(this, worker);
+
+  function terminate() {
+    return _worker.terminate();
+  }
+
+  this.terminate = terminate;
 }
+WebWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+WebWorkerEventDispatcher.prototype.constructor = WebWorkerEventDispatcher;
+
+
+var NOINIT = {};
+/**
+ *
+ * @param worker
+ * @extends WorkerMessenger
+ * @constructor
+ */
+function WorkerEventDispatcher(worker) {
+  if (worker !== NOINIT) {
+    WebWorkerEventDispatcher.call(worker);
+  }
+}
+
+WorkerEventDispatcher.WorkerEvent = WorkerEvent;
+WorkerEventDispatcher.WorkerType = WorkerType;
+
+WorkerEventDispatcher.create = function(target, type) {
+  var dispatcher = null;
+  switch (type) {
+    default:
+    case WorkerType.WEB_WORKER:
+      dispatcher = new WebWorkerEventDispatcher(target);
+      break;
+    case WorkerType.SHARED_WORKER:
+      dispatcher = new SharedWorkerEventDispatcher(target);
+      break;
+    case WorkerType.SHARED_WORKER_SERVER:
+      dispatcher = new ServerEventDispatcher(target);
+      break;
+    case WorkerType.SHARED_WORKER_CLIENT:
+      dispatcher = new ClientEventDispatcher(target);
+      break;
+  }
+  return dispatcher;
+}
+
+WorkerEventDispatcher.toJSON = function(object) {
+  var objectJson;
+  if (object.hasOwnProperty('toJSON') && typeof(object.toJSON) === 'function') {
+    objectJson = event.toJSON();
+  } else {
+    objectJson = JSON.stringify(event);
+  }
+  return objectJson;
+};
+
+WorkerEventDispatcher.fromJSON = function(data) {
+  var object; // keep it undefined in case of error
+  if (EventDispatcher.isObject(data)) {
+    object = data;
+  } else {
+    try {
+      object = JSON.parse(data);
+    } catch (error) {
+      // this isn't an event we are waiting for.
+    }
+    return object;
+  }
+};
 
 WorkerEventDispatcher.self = function() {
   return new WorkerEventDispatcher(self);
+};
+
+WorkerEventDispatcher.getWorkerType = function(object) {
+  var type = null;
+  if (object instanceof SharedWorker) {
+    type = WorkerType.SHARED_WORKER;
+  } else if (object instanceof SharedWorker) {
+    type = WorkerType.WEB_WORKER;
+  } else if (object instanceof Event) {
+    type = WorkerType.CLIENT;
+  } else if (object && typeof(object.postMessage) === 'function' && typeof(object.addEventListener) === 'function') {
+    type = WorkerType.PORT;
+  }
+  return type;
 };
