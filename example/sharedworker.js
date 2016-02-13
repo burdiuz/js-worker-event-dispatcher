@@ -7,10 +7,19 @@ importScripts(
   '../dist/worker-event-dispatcher.js'
 );
 
-console.log('ROOT', self);
+var getName = (function() {
+  var baseName = 'Client #';
+  var index = 0;
+  return function() {
+    return baseName + String(++index);
+  };
+})();
 
-self.onconnect = function(event) {
-  event.ports[0].start();
-  event.ports[0].postMessage('SHARED WORKER WORKS');
-  console.log('CONNECT', self);
-};
+var dispatcher = WorkerEventDispatcher.self();
+dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
+  var client = event.client;
+  client.start();
+  client.dispatchEvent('handshake', {
+    name: getName()
+    });
+});

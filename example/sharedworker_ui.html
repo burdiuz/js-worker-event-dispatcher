@@ -20,8 +20,6 @@
       var worker = new SharedWorker('sharedworker.js');
       var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.WorkerType.SHARED_WORKER);
 
-      dispatcher.start();
-
       dispatcher.addEventListener('handshake', function(event) {
         name = event.data.name;
         $('#frameName').html(name);
@@ -45,7 +43,8 @@
           $('#message').val('');
         });
 
-        dispatcher.dispatchEvent('initialized');
+        console.log('Started');
+        dispatcher.start();
       });
     })();
   </script>

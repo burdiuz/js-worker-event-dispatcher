@@ -35,19 +35,79 @@
    *      shared event -- R only
    */
   var NOINIT = {};
-  /*
-  function WorkerEvent(type, data) {
+  
+  var Event = {};
+  
+  Object.defineProperties(Event, {
+    CONNECT: {
+      value: 'connect'
+    },
+    MESSAGE: {
+      value: 'message'
+    },
+    ERROR: {
+      value: 'error'
+    },
+    LANGUAGECHANGE: {
+      value: 'languagechange'
+    },
+    ONLINE: {
+      value: 'online'
+    },
+    OFFLINE: {
+      value: 'offline'
+    }
+  });
+  
+  function WorkerEvent(type, data, sourceEvent, client) {
     EventDispatcher.Event.call(this, type, data);
+    this.sourceEvent = sourceEvent;
+    this.client = client;
   }
-  WorkerEvent.createHandler = function(type, messenger) {
-    return function(event) {
-      if (dispatcher.hasEventListener(type)) {
-        dispatcher.dispatchEvent(new WorkerEvent(type, event));
+  WorkerEvent.createHandler = function(type, target, dispatcher) {
+    var eventType = WorkerEvent.getWorkerEventType(type);
+  
+    function handler(event) {
+      if (dispatcher.hasEventListener(eventType)) {
+        dispatcher.dispatchEvent(new WorkerEvent(eventType, event, event));
       }
     }
+  
+    target.addEventListener(type, handler);
+    return handler;
+  };
+  WorkerEvent.getWorkerEventType = function(type) {
+    var eventType = '';
+    switch (type) {
+      case Event.CONNECT:
+        eventType = WorkerEvent.CONNECT;
+        break;
+      case Event.MESSAGE:
+        eventType = WorkerEvent.MESSAGE;
+        break;
+      case Event.ERROR:
+        eventType = WorkerEvent.ERROR;
+        break;
+      case Event.LANGUAGECHANGE:
+        eventType = WorkerEvent.LANGUAGECHANGE;
+        break;
+      case Event.ONLINE:
+        eventType = WorkerEvent.ONLINE;
+        break;
+      case Event.OFFLINE:
+        eventType = WorkerEvent.OFFLINE;
+        break;
+    }
+    return eventType;
   };
   
   Object.defineProperties(WorkerEvent, {
+    CONNECT: {
+      value: 'worker:connect'
+    },
+    MESSAGE: {
+      value: 'worker:message'
+    },
     ERROR: {
       value: 'worker:error'
     },
@@ -61,11 +121,11 @@
       value: 'worker:offline'
     }
   });
-  */
+  
   var WorkerType = {};
   Object.defineProperties(WorkerType, {
-    WEB_WORKER: {
-      value: 'web'
+    DEDICATED_WORKER: {
+      value: 'dedicated'
     },
     SHARED_WORKER: {
       value: 'shared'
@@ -97,12 +157,11 @@
     }
   
     MessagePortDispatcher.call(this, port, postMessageHandler);
-  /*
-    port.addEventListener('error', WorkerEvent.createHandler(WorkerEvent.ERROR, this.receiver));
-    port.addEventListener('languagechange', WorkerEvent.createHandler(WorkerEvent.LANGUAGECHANGE, this.receiver));
-    port.addEventListener('online', WorkerEvent.createHandler(WorkerEvent.ONLINE, this.receiver));
-    port.addEventListener('offline', WorkerEvent.createHandler(WorkerEvent.OFFLINE, this.receiver));
-    */
+  
+    WorkerEvent.createHandler(Event.ERROR, port, this.receiver);
+    WorkerEvent.createHandler(Event.LANGUAGECHANGE, port, this.receiver);
+    WorkerEvent.createHandler(Event.ONLINE, port, this.receiver);
+    WorkerEvent.createHandler(Event.OFFLINE, port, this.receiver);
   }
   
   /**
@@ -111,21 +170,26 @@
    * @extends WorkerMessenger
    * @constructor
    */
-  function SharedWorkerEventDispatcher(worker) {
+  function SharedWorkerEventDispatcher(worker, name) {
+    var _worker = worker;
+    if (!EventDispatcher.isObject(worker)) {
+      _worker = new SharedWorker(String(worker), name);
+    }
+  
     function start() {
-      worker.port.start();
+      _worker.port.start();
     }
   
     function close() {
-      worker.port.close();
+      _worker.port.close();
     }
   
-    WorkerMessenger.call(this, worker.port);
+    WorkerMessenger.call(this, _worker.port);
   
     this.start = start;
     this.close = close;
   }
-  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER);
   SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
   
   /**
@@ -134,23 +198,39 @@
    * @extends WorkerMessenger
    * @constructor
    */
-  function ServerEventDispatcher(worker) {
-  
-    var _facade = worker.port;
+  function ServerEventDispatcher(target) {
+    var _target = target || self;
+    /**
+     * @type {EventDispatcher}
+     */
+    var _receiver = new EventDispatcher();
+    var _clients = [];
   
     function connectHandler(event) {
-      var target;
-      if (this.receiver.hasEventListener('worker:connect')) {
-        target = event.source || event.ports[0];
-      }
+      var client = WorkerEventDispatcher.create(
+        event.ports[0],
+        WorkerType.SHARED_WORKER_CLIENT
+      );
+      _clients.push(client);
+      _receiver.dispatchEvent(new WorkerEvent(WorkerEvent.CONNECT, client, event, client));
     }
+    _target.addEventListener('connect', connectHandler);
   
-    WorkerMessenger.call(this, worker);
+    this.addEventListener = _receiver.addEventListener;
+    this.hasEventListener = _receiver.hasEventListener;
+    this.removeEventListener = _receiver.removeEventListener;
+    this.removeAllEventListeners = _receiver.removeAllEventListeners;
   
-    worker.addEventListener('connect', connectHandler);
-    worker.addEventListener('message', WorkerEvent.createHandler(WorkerEvent.MESSAGE, _receiver));
+    Object.defineProperties(this, {
+      receiver: {
+        value: _receiver
+      },
+      target: {
+        value: _target
+      }
+    });
   }
-  ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+  ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER_SERVER);
   ServerEventDispatcher.prototype.constructor = ServerEventDispatcher;
   
   /**
@@ -172,7 +252,7 @@
     this.start = start;
     this.close = close;
   }
-  ClientEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
+  ClientEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER_CLIENT);
   ClientEventDispatcher.prototype.constructor = ClientEventDispatcher;
   
   /**
@@ -181,7 +261,7 @@
    * @extends WorkerMessenger
    * @constructor
    */
-  function WebWorkerEventDispatcher(worker) {
+  function DedicatedWorkerEventDispatcher(worker) {
     var _worker = worker || self;
   
     if (!EventDispatcher.isObject(worker)) {
@@ -196,8 +276,8 @@
   
     this.terminate = terminate;
   }
-  WebWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT);
-  WebWorkerEventDispatcher.prototype.constructor = WebWorkerEventDispatcher;
+  DedicatedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.DEDICATED_WORKER);
+  DedicatedWorkerEventDispatcher.prototype.constructor = DedicatedWorkerEventDispatcher;
   
   /**
    *
@@ -205,21 +285,33 @@
    * @extends WorkerMessenger
    * @constructor
    */
-  function WorkerEventDispatcher(worker) {
-    if (worker !== NOINIT) {
-      WebWorkerEventDispatcher.call(this, worker);
+  function WorkerEventDispatcher(worker, type) {
+    if (worker === NOINIT){
+      Object.defineProperties(this, {
+        type: {
+          value: type
+        }
+      });
+    }else{
+      DedicatedWorkerEventDispatcher.call(this, worker);
     }
   }
   
-  //WorkerEventDispatcher.WorkerEvent = WorkerEvent;
+  WorkerEventDispatcher.WorkerEvent = WorkerEvent;
   WorkerEventDispatcher.WorkerType = WorkerType;
+  
+  
+  WorkerEventDispatcher.Dedicated = DedicatedWorkerEventDispatcher;
+  WorkerEventDispatcher.Shared = SharedWorkerEventDispatcher;
+  WorkerEventDispatcher.Server = ServerEventDispatcher;
+  WorkerEventDispatcher.Client = ClientEventDispatcher;
   
   WorkerEventDispatcher.create = function(target, type) {
     var dispatcher = null;
     switch (type) {
       default:
-      case WorkerType.WEB_WORKER:
-        dispatcher = new WebWorkerEventDispatcher(target);
+      case WorkerType.DEDICATED_WORKER:
+        dispatcher = new DedicatedWorkerEventDispatcher(target);
         break;
       case WorkerType.SHARED_WORKER:
         dispatcher = new SharedWorkerEventDispatcher(target);
@@ -235,7 +327,13 @@
   }
   
   WorkerEventDispatcher.self = function() {
-    return new WorkerEventDispatcher(self);
+    var dispatcher = null;
+    if (typeof(self.postMessage) === 'function') {
+      dispatcher = new DedicatedWorkerEventDispatcher(self);
+    } else {
+      dispatcher = new ServerEventDispatcher(self);
+    }
+    return dispatcher;
   };
   
   return WorkerEventDispatcher;
