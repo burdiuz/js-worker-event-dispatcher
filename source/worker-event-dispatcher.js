@@ -48,9 +48,15 @@ Object.defineProperties(WorkerType, {
   SHARED_WORKER: {
     value: 'shared'
   },
+  /**
+   * @private
+   */
   SHARED_WORKER_SERVER: {
     value: 'sharedServer'
   },
+  /**
+   * @private
+   */
   SHARED_WORKER_CLIENT: {
     value: 'sharedClient'
   }
