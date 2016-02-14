@@ -26,13 +26,6 @@
   
   /* TODOs
    * 1. implement transferList getter on passed event
-   * 2. add SharedWebWorker suppor, add connect event handler
-   * 3. WorkerEventDispatcher should become base class for workers and have static factory method to create different types ofdispatchers depending on worker type.
-   *      web worker UI -- R/W
-   *      web worker self -- R/W
-   *      shared UI -- R/W
-   *      shared self -- W only
-   *      shared event -- R only
    */
   var NOINIT = {};
   
@@ -227,6 +220,11 @@
       },
       target: {
         value: _target
+      },
+      clients: {
+        get: function(){
+          return _clients.slice();
+        }
       }
     });
   }
@@ -299,7 +297,6 @@
   
   WorkerEventDispatcher.WorkerEvent = WorkerEvent;
   WorkerEventDispatcher.WorkerType = WorkerType;
-  
   
   WorkerEventDispatcher.Dedicated = DedicatedWorkerEventDispatcher;
   WorkerEventDispatcher.Shared = SharedWorkerEventDispatcher;

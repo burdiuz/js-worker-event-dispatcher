@@ -15,11 +15,35 @@ var getName = (function() {
   };
 })();
 
+var _history = [];
+var HISTORY_MAX_LENGTH = 10;
+
+function addToHistory(message) {
+  _history.unshift(message);
+  if (_history.length > HISTORY_MAX_LENGTH) {
+    _history = _history.slice(0, HISTORY_MAX_LENGTH);
+  }
+}
+
+function getHistory() {
+  return _history.slice().reverse();
+}
+
 var dispatcher = WorkerEventDispatcher.self();
 dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
   var client = event.client;
+
+  client.addEventListener('sendData', function(event) {
+    addToHistory(event.data);
+
+    dispatcher.clients.forEach(function(client, index, list) {
+      client.dispatchEvent('dataReceived', event.data);
+    });
+  });
+
   client.start();
   client.dispatchEvent('handshake', {
-    name: getName()
-    });
+    name: getName(),
+    history: getHistory()
+  });
 });

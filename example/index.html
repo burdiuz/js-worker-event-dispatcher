@@ -6,6 +6,11 @@
   <title>WorkerEventDispatcher Example</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
         integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <style type="text/css">
+    iframe{
+      height: 600px;
+    }
+  </style>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
           integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
@@ -15,7 +20,7 @@
           src="../bower_components/messageport-event-dispatcher/dist/messageport-event-dispatcher.js"></script>
   <script type="text/javascript" src="../dist/worker-event-dispatcher.js"></script>
   <script type="text/javascript">
-    // WebWorker UI
+    // DedicatedWorker UI
     (function() {
       // Are equivalents:
       //var workerApi = new WorkerEventDispatcher('webworker.js');
@@ -59,8 +64,6 @@
   <script type="text/javascript">
     // SharedWorker UI
     (function() {
-      new SharedWorker('sharedworker.js');
-      //var workerApi = WorkerEventDispatcher('webworker.js');
       $(document).ready(function() {
         $('.create-shared').on('click', function(event) {
           window.open('sharedworker_ui.html', '_blank');
@@ -72,33 +75,39 @@
 <body>
 <div class="container">
   <div class="row">
-    <div class="col-md-12 col-sm-12">
+    <div class="col-xs-12">
       <h4>Dedicated Worker Example</h4>
       Timestamp values are returned from worker after request.
     </div>
   </div>
   <div class="row">
-    <div class="col-md-4 col-sm-6 form-group">
+    <div class="col-xs-4 form-group">
       <label for="time">Time:</label>
       <input type="text" class="time form-control" id="time" readonly>
     </div>
   </div>
   <div class="row" style="margin-bottom: 100px;">
-    <div class="col-md-4 col-sm-6 form-group">
+    <div class="col-xs-4form-group">
       <button class="btn btn-primary start">Start</button>
       <button class="btn btn-default stop">Stop</button>
     </div>
   </div>
   <div class="row">
-    <div class="col-md-12 col-sm-12">
+    <div class="col-xs-12">
       <h4>Shared Worker Example</h4>
       Create some windows and they will communicate between each other via shared worker.
     </div>
   </div>
   <div class="row">
-    <div class="col-md-4 col-sm-6 form-group">
-      <button class="btn btn-primary create-shared">Create page with SharedWorker</button>
+    <div class="col-xs-12 form-group">
+      You can open more 'chat' tabs and they will keep connection. <button class="btn btn-primary create-shared">Create page with SharedWorker</button>
     </div>
+  </div>
+  <div class="row">
+    <iframe class="col-xs-6" src="sharedworker_ui.html">
+    </iframe>
+    <iframe class="col-xs-6" src="sharedworker_ui.html">
+    </iframe>
   </div>
 </div>
 </body>

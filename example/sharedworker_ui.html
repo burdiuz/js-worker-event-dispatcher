@@ -23,6 +23,12 @@
       dispatcher.addEventListener('handshake', function(event) {
         name = event.data.name;
         $('#frameName').html(name);
+        console.log(event.data);
+        if (event.data.history) {
+          event.data.history.forEach(function(message) {
+            addMessage(message.name, message.text);
+          });
+        }
       });
 
       dispatcher.addEventListener('dataReceived', function(event) {
@@ -34,16 +40,21 @@
       }
 
       $(document).ready(function() {
-        $('.btn-primary').on('click', function(event) {
+        function messageHandler(event) {
           dispatcher.dispatchEvent('sendData', {
             name: name,
             text: $('#message').val()
           });
-          addMessage(name, $('#message').val());
           $('#message').val('');
-        });
+        }
 
-        console.log('Started');
+        $('#message').keyup(function(event) {
+          if (event.keyCode == 13) {
+            messageHandler();
+          }
+        });
+        $('.btn-primary').on('click', messageHandler);
+
         dispatcher.start();
       });
     })();
@@ -66,7 +77,7 @@
       <input type="text" class="form-control" id="message">
     </div>
     <div class="col-xs-2 form-group">
-      <input type="button" value="Send Event" class="btn btn-primary"></input>
+      <input type="button" value="Send" class="btn btn-primary"></input>
     </div>
   </div>
   <div id="messages">

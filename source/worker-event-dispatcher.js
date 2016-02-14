@@ -198,6 +198,11 @@ function ServerEventDispatcher(target) {
     },
     target: {
       value: _target
+    },
+    clients: {
+      get: function(){
+        return _clients.slice();
+      }
     }
   });
 }
