@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "event-dispatcher": "git://github.com/burdiuz/js-event-dispatcher.git",
-    "messageport-event-dispatcher": "git://github.com/burdiuz/js-messageport-event-dispatcher.git"
+    "messageport-dispatcher": "git://github.com/burdiuz/js-messageport-event-dispatcher.git"
   },
   "devDependencies": {
     "express": "^4.13.3",

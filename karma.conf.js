@@ -16,7 +16,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/event-dispatcher/dist/event-dispatcher.js',
-      'node_modules/messageport-event-dispatcher/dist/messageport-event-dispatcher.js',
+      'node_modules/messageport-dispatcher/dist/messageport-dispatcher.js',
       'source/worker-event-dispatcher.js',
       'tests/*.spec.js'
     ],
