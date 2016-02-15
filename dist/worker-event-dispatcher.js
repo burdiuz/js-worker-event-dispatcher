@@ -137,53 +137,38 @@
     }
   });
   
-  /**
-   *
-   * @param port {Worker|MessagePort}
-   * @extends MessagePortDispatcher
-   * @constructor
-   */
-  function WorkerMessenger(port) {
+  var WorkerMessenger = (function() {
+    /**
+     *
+     * @param port {Worker|MessagePort}
+     * @extends MessagePortDispatcher
+     * @constructor
+     */
+    function WorkerMessenger(port) {
   
-    function postMessageHandler(data, transferList) {
-      port.postMessage(data, transferList);
+      function postMessageHandler(data, transferList) {
+        port.postMessage(data, transferList);
+      }
+  
+      MessagePortDispatcher.call(this, port, postMessageHandler);
     }
   
-    MessagePortDispatcher.call(this, port, postMessageHandler);
-  
-    WorkerEvent.createHandler(Event.ERROR, port, this.receiver);
-    WorkerEvent.createHandler(Event.LANGUAGECHANGE, port, this.receiver);
-    WorkerEvent.createHandler(Event.ONLINE, port, this.receiver);
-    WorkerEvent.createHandler(Event.OFFLINE, port, this.receiver);
-  }
-  
-  /**
-   *
-   * @param worker {SharedWorker}
-   * @extends WorkerMessenger
-   * @constructor
-   */
-  function SharedWorkerEventDispatcher(worker, name) {
-    var _worker = worker;
-    if (!EventDispatcher.isObject(worker)) {
-      _worker = new SharedWorker(String(worker), name);
+    function setScopeHandlers(source, target) {
+      WorkerEvent.createHandler(Event.ERROR, source, target);
+      WorkerEvent.createHandler(Event.LANGUAGECHANGE, source, target);
+      WorkerEvent.createHandler(Event.ONLINE, source, target);
+      WorkerEvent.createHandler(Event.OFFLINE, source, target);
     }
   
-    function start() {
-      _worker.port.start();
+    WorkerMessenger.setScopeHandlers = setScopeHandlers;
+  
+    function setAbstractWorkerHandlers(source, target) {
+      WorkerEvent.createHandler(Event.ERROR, source, target);
     }
   
-    function close() {
-      _worker.port.close();
-    }
-  
-    WorkerMessenger.call(this, _worker.port);
-  
-    this.start = start;
-    this.close = close;
-  }
-  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER);
-  SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
+    WorkerMessenger.setAbstractWorkerHandlers = setAbstractWorkerHandlers;
+    return WorkerMessenger;
+  })();
   
   /**
    *
@@ -197,16 +182,15 @@
      * @type {EventDispatcher}
      */
     var _receiver = new EventDispatcher();
-    var _clients = [];
   
     function connectHandler(event) {
       var client = WorkerEventDispatcher.create(
         event.ports[0],
         WorkerType.SHARED_WORKER_CLIENT
       );
-      _clients.push(client);
       _receiver.dispatchEvent(new WorkerEvent(WorkerEvent.CONNECT, client, event, client));
     }
+  
     _target.addEventListener('connect', connectHandler);
   
     this.addEventListener = _receiver.addEventListener;
@@ -214,17 +198,14 @@
     this.removeEventListener = _receiver.removeEventListener;
     this.removeAllEventListeners = _receiver.removeAllEventListeners;
   
+    WorkerMessenger.setScopeHandlers(_target, _receiver);
+  
     Object.defineProperties(this, {
       receiver: {
         value: _receiver
       },
       target: {
         value: _target
-      },
-      clients: {
-        get: function(){
-          return _clients.slice();
-        }
       }
     });
   }
@@ -255,21 +236,40 @@
   
   /**
    *
+   * @param worker {SharedWorker}
+   * @extends WorkerMessenger
+   * @constructor
+   */
+  function SharedWorkerEventDispatcher(worker, name) {
+    var _target = worker;
+    if (!EventDispatcher.isObject(worker)) {
+      _target = new SharedWorker(String(worker), name);
+    }
+  
+    ClientEventDispatcher.call(this, _target.port);
+    WorkerMessenger.setAbstractWorkerHandlers(_target, this.receiver);
+  }
+  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER);
+  SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
+  
+  /**
+   *
    * @param worker {Worker|String}
    * @extends WorkerMessenger
    * @constructor
    */
   function DedicatedWorkerEventDispatcher(worker) {
-    var _worker = worker || self;
+    var _target = worker || self;
   
     if (!EventDispatcher.isObject(worker)) {
-      _worker = new Worker(String(worker));
+      _target = new Worker(String(worker));
     }
   
-    WorkerMessenger.call(this, _worker);
+    WorkerMessenger.call(this, _target);
+    WorkerMessenger.setScopeHandlers(_target, this.receiver);
   
     function terminate() {
-      return _worker.terminate();
+      return _target.terminate();
     }
   
     this.terminate = terminate;
@@ -284,13 +284,13 @@
    * @constructor
    */
   function WorkerEventDispatcher(worker, type) {
-    if (worker === NOINIT){
+    if (worker === NOINIT) {
       Object.defineProperties(this, {
         type: {
           value: type
         }
       });
-    }else{
+    } else {
       DedicatedWorkerEventDispatcher.call(this, worker);
     }
   }

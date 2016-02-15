@@ -7,6 +7,8 @@ importScripts(
   '../dist/worker-event-dispatcher.js'
 );
 
+var _clients = [];
+
 var getName = (function() {
   var baseName = 'Client #';
   var index = 0;
@@ -32,11 +34,12 @@ function getHistory() {
 var dispatcher = WorkerEventDispatcher.self();
 dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
   var client = event.client;
+  _clients.push(client);
 
   client.addEventListener('sendData', function(event) {
     addToHistory(event.data);
 
-    dispatcher.clients.forEach(function(client, index, list) {
+    _clients.forEach(function(client, index, list) {
       client.dispatchEvent('dataReceived', event.data);
     });
   });
