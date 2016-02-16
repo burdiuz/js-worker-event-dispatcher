@@ -6,12 +6,7 @@ describe('ClientEventDispatcher', function() {
   var port = null;
   var dispatcher = null;
   beforeEach(function() {
-    port = {
-      start: sinon.spy(),
-      close: sinon.spy(),
-      addEventListener: sinon.spy(),
-      postMessage: sinon.spy()
-    };
+    port = new MessagePort();
     dispatcher = new ClientEventDispatcher(port);
   });
   it('should extend WorkerEventDispatcher', function() {

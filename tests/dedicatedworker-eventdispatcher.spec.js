@@ -5,11 +5,7 @@ describe('DedicatedWorkerEventDispatcher', function() {
   var worker = null;
   var dispatcher = null;
   beforeEach(function() {
-    worker = {
-      addEventListener: sinon.spy(),
-      postMessage: sinon.spy(),
-      terminate: sinon.spy()
-    };
+    worker = new Worker();
     dispatcher = new DedicatedWorkerEventDispatcher(worker);
   });
   it('should extend WorkerEventDispatcher', function() {
@@ -41,6 +37,33 @@ describe('DedicatedWorkerEventDispatcher', function() {
     });
     it('should call worker.terminate()', function() {
       expect(worker.terminate).to.be.calledOnce;
+    });
+  });
+  describe('When creating from URL', function() {
+    var dispatcher = null;
+    beforeEach(function() {
+      Worker.reset();
+      dispatcher = new DedicatedWorkerEventDispatcher('/some/url.js');
+    });
+    it('should create Worker instance', function() {
+      expect(Worker).to.be.calledOnce;
+      expect(Worker).to.be.calledWithNew;
+    });
+    it('should pass URL to Worker', function() {
+      expect(Worker.getCall(0).args[0]).to.be.equal('/some/url.js');
+    });
+    it('should keep Worker instance as target', function() {
+      expect(dispatcher.target).to.be.an('object');
+    });
+  });
+  describe('When creating without args', function() {
+    var dispatcher = null;
+    beforeEach(function() {
+      window.self = new MessagePort();
+      dispatcher = new DedicatedWorkerEventDispatcher();
+    });
+    it('should use `self` thinking its WorkerGlobalScope', function() {
+      expect(dispatcher.target).to.be.equal(window.self);
     });
   });
 });

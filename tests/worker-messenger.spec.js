@@ -2,10 +2,7 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 describe('WorkerMessenger', function() {
-  var port = {
-    addEventListener: sinon.spy(),
-    postMessage: sinon.spy()
-  };
+  var port = new MessagePortBase();
   var messenger = null;
   beforeEach(function() {
     messenger = new WorkerMessenger(port);

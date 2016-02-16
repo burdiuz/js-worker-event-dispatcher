@@ -239,7 +239,7 @@ SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
 function DedicatedWorkerEventDispatcher(worker) {
   var _target = worker || self;
 
-  if (!EventDispatcher.isObject(worker)) {
+  if (!EventDispatcher.isObject(_target)) {
     _target = new Worker(String(worker));
   }
 

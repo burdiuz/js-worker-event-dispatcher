@@ -6,15 +6,7 @@ describe('SharedWorkerEventDispatcher', function() {
     var worker = null;
     var dispatcher = null;
     beforeEach(function() {
-      worker = {
-        addEventListener: sinon.spy(),
-        port: {
-          start: sinon.spy(),
-          close: sinon.spy(),
-          addEventListener: sinon.spy(),
-          postMessage: sinon.spy()
-        }
-      };
+      worker = new SharedWorker();
       dispatcher = new SharedWorkerEventDispatcher(worker);
     });
     it('should extend WorkerEventDispatcher', function() {
@@ -52,6 +44,26 @@ describe('SharedWorkerEventDispatcher', function() {
       it('should call port.close()', function() {
         expect(worker.port.close).to.be.calledOnce;
       });
+    });
+  });
+  describe('When creating from URL', function() {
+    var dispatcher = null;
+    beforeEach(function() {
+      SharedWorker.reset();
+      dispatcher = new SharedWorkerEventDispatcher('/some/url.js', 'SWName');
+    });
+    it('should create SharedWorker instance', function() {
+      expect(SharedWorker).to.be.calledOnce;
+      expect(SharedWorker).to.be.calledWithNew;
+    });
+    it('should pass URL to SharedWorker', function() {
+      expect(SharedWorker.getCall(0).args[0]).to.be.equal('/some/url.js');
+    });
+    it('should pass name to SharedWorker', function() {
+      expect(SharedWorker.getCall(0).args[1]).to.be.equal('SWName');
+    });
+    it('should keep SharedWorker instance as target', function() {
+      expect(dispatcher.target).to.be.an('object');
     });
   });
 });
