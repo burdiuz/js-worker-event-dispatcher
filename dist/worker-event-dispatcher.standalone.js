@@ -125,12 +125,12 @@
          * 3. In this method create function StoppableEvent that will extend from this event and add these functions,
          *    then instantiate it for this one cycle.
          */
-         event.stopPropagation = stopPropagation;
-         event.stopImmediatePropagation = stopImmediatePropagation;
+        event.stopPropagation = stopPropagation;
+        event.stopImmediatePropagation = stopImmediatePropagation;
         /*
-        var rmStopPropagation = EventDispatcher.setupOptional(event, 'stopPropagation', stopPropagation);
-        var rmStopImmediatePropagation = EventDispatcher.setupOptional(event, 'stopImmediatePropagation', stopImmediatePropagation);
-        */
+         var rmStopPropagation = EventDispatcher.setupOptional(event, 'stopPropagation', stopPropagation);
+         var rmStopImmediatePropagation = EventDispatcher.setupOptional(event, 'stopImmediatePropagation', stopImmediatePropagation);
+         */
         var priorities = getHashByKey(event.type, this._listeners);
         if (priorities) {
           var list = Object.getOwnPropertyNames(priorities).sort(function(a, b) {
@@ -151,9 +151,9 @@
         delete event.stopPropagation;
         delete event.stopImmediatePropagation;
         /*
-        rmStopPropagation();
-        rmStopImmediatePropagation();
-        */
+         rmStopPropagation();
+         rmStopImmediatePropagation();
+         */
       }
     
       function createList(eventType, priority, target) {
@@ -191,8 +191,12 @@
     
       return EventListeners;
     })();
-    
-    function EventDispatcher() {
+    /**
+     *
+     * @param eventPreprocessor {?Function}
+     * @constructor
+     */
+    function EventDispatcher(eventPreprocessor) {
       /**
        * @type {EventListeners}
        */
@@ -215,7 +219,11 @@
       }
     
       function dispatchEvent(event, data) {
-        _listeners.call(EventDispatcher.getEvent(event, data));
+        var eventObject = EventDispatcher.getEvent(event, data);
+        if (eventPreprocessor) {
+          eventObject = eventPreprocessor.call(this, eventObject);
+        }
+        _listeners.call(eventObject);
       }
     
       this.addEventListener = addEventListener;
@@ -234,21 +242,21 @@
     }
     
     /*
-    function setupOptional(target, name, value) {
-      var cleaner = null;
-      if (name in target) {
-        cleaner = function() {
-        };
-      } else {
-        target[name] = value;
-        cleaner = function() {
-          delete target[name];
-        };
-      }
-      return cleaner;
-    }
-    EventDispatcher.setupOptional = setupOptional;
-    */
+     function setupOptional(target, name, value) {
+     var cleaner = null;
+     if (name in target) {
+     cleaner = function() {
+     };
+     } else {
+     target[name] = value;
+     cleaner = function() {
+     delete target[name];
+     };
+     }
+     return cleaner;
+     }
+     EventDispatcher.setupOptional = setupOptional;
+     */
     
     EventDispatcher.isObject = isObject;
     
@@ -299,10 +307,13 @@
     
     /**
      *
-     * @param port {Window|Worker|MessagePort}
+     * @param target {Window|Worker|MessagePort}
+     * @param customPostMessageHandler {?Function} Function that receive message object and pass it to MessagePort.postMessage()
+     * @param receiverEventPreprocessor {?Function} Function that pre-process all events received from MessagePort, before passing to listeners
+     * @param senderEventPreprocessor Function that pre-process all events sent to MessagePort
      * @constructor
      */
-    function MessagePortDispatcher(target, customPostMessageHandler) {
+    function MessagePortDispatcher(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor) {
       target = target || self;
       var _dispatcherId = 'MP/' + String(Math.ceil(Math.random() * 10000)) + '/' + String(Date.now());
       var postMessageHandler = customPostMessageHandler || function(data, transferList) {
@@ -311,11 +322,11 @@
       /**
        * @type {EventDispatcher}
        */
-      var _sender = new EventDispatcher();
+      var _sender = new EventDispatcher(senderEventPreprocessor);
       /**
        * @type {EventDispatcher}
        */
-      var _receiver = new EventDispatcher();
+      var _receiver = new EventDispatcher(receiverEventPreprocessor);
     
       function messageHandler(event) {
         var message = MessagePortEvent.fromJSON(event.data);
@@ -398,23 +409,36 @@
     var _self = null;
     var _parent = null;
     var _top = null;
-    MessagePortDispatcher.self = function() {
+    /**
+     * @param receiverEventPreprocessor {?Function}
+     * @param senderEventPreprocessor {?Function}
+     * @returns {MessagePortDispatcher}
+     */
+    MessagePortDispatcher.self = function(receiverEventPreprocessor, senderEventPreprocessor) {
       if (!_self) {
-        _self = new MessagePortDispatcher(self);
+        _self = new MessagePortDispatcher(self, null, receiverEventPreprocessor, senderEventPreprocessor);
       }
       return _self;
     };
-    
-    MessagePortDispatcher.parent = function() {
+    /**
+     * @param receiverEventPreprocessor {?Function}
+     * @param senderEventPreprocessor {?Function}
+     * @returns {MessagePortDispatcher}
+     */
+    MessagePortDispatcher.parent = function(receiverEventPreprocessor, senderEventPreprocessor) {
       if (!_parent) {
-        _parent = new MessagePortDispatcher(parent);
+        _parent = new MessagePortDispatcher(parent, null, receiverEventPreprocessor, senderEventPreprocessor);
       }
       return _parent;
     };
-    
-    MessagePortDispatcher.top = function() {
+    /**
+     * @param receiverEventPreprocessor {?Function}
+     * @param senderEventPreprocessor {?Function}
+     * @returns {MessagePortDispatcher}
+     */
+    MessagePortDispatcher.top = function(receiverEventPreprocessor, senderEventPreprocessor) {
       if (!_top) {
-        _top = new MessagePortDispatcher(top);
+        _top = new MessagePortDispatcher(top, null, receiverEventPreprocessor, senderEventPreprocessor);
       }
       return _top;
     };
@@ -543,16 +567,18 @@
     /**
      *
      * @param port {Worker|MessagePort}
+     * @param receiverEventPreprocessor {?Function}
+     * @param senderEventPreprocessor {?Function}
      * @extends MessagePortDispatcher
      * @constructor
      */
-    function WorkerMessenger(port) {
+    function WorkerMessenger(port, receiverEventPreprocessor, senderEventPreprocessor) {
   
       function postMessageHandler(data, transferList) {
         port.postMessage(data, transferList);
       }
   
-      MessagePortDispatcher.call(this, port, postMessageHandler);
+      MessagePortDispatcher.call(this, port, postMessageHandler, receiverEventPreprocessor, senderEventPreprocessor);
     }
   
     function setScopeHandlers(source, target) {
@@ -575,15 +601,16 @@
   /**
    *
    * @param worker
+   * @param receiverEventPreprocessor {?Function}
    * @extends WorkerMessenger
    * @constructor
    */
-  function ServerEventDispatcher(target) {
+  function ServerEventDispatcher(target, receiverEventPreprocessor) {
     var _target = target || self;
     /**
      * @type {EventDispatcher}
      */
-    var _receiver = new EventDispatcher();
+    var _receiver = new EventDispatcher(receiverEventPreprocessor);
   
     function connectHandler(event) {
       var client = WorkerEventDispatcher.create(
@@ -616,10 +643,12 @@
   
   /**
    * @param port {MessagePort}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
    * @extends WorkerMessenger
    * @constructor
    */
-  function ClientEventDispatcher(port) {
+  function ClientEventDispatcher(port, receiverEventPreprocessor, senderEventPreprocessor) {
     function start() {
       port.start();
     }
@@ -628,7 +657,7 @@
       port.close();
     }
   
-    WorkerMessenger.call(this, port);
+    WorkerMessenger.call(this, port, receiverEventPreprocessor, senderEventPreprocessor);
   
     this.start = start;
     this.close = close;
@@ -639,16 +668,19 @@
   /**
    *
    * @param worker {SharedWorker}
+   * @param name {String}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
    * @extends WorkerMessenger
    * @constructor
    */
-  function SharedWorkerEventDispatcher(worker, name) {
+  function SharedWorkerEventDispatcher(worker, name, receiverEventPreprocessor, senderEventPreprocessor) {
     var _target = worker;
     if (!EventDispatcher.isObject(worker)) {
       _target = new SharedWorker(String(worker), name);
     }
   
-    ClientEventDispatcher.call(this, _target.port);
+    ClientEventDispatcher.call(this, _target.port, receiverEventPreprocessor, senderEventPreprocessor);
     WorkerMessenger.setAbstractWorkerHandlers(_target, this.receiver);
   }
   SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER);
@@ -657,17 +689,19 @@
   /**
    *
    * @param worker {Worker|String}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
    * @extends WorkerMessenger
    * @constructor
    */
-  function DedicatedWorkerEventDispatcher(worker) {
+  function DedicatedWorkerEventDispatcher(worker, receiverEventPreprocessor, senderEventPreprocessor) {
     var _target = worker || self;
   
     if (!EventDispatcher.isObject(_target)) {
       _target = new Worker(String(worker));
     }
   
-    WorkerMessenger.call(this, _target);
+    WorkerMessenger.call(this, _target, receiverEventPreprocessor, senderEventPreprocessor);
     WorkerMessenger.setScopeHandlers(_target, this.receiver);
   
     function terminate() {
@@ -681,11 +715,14 @@
   
   /**
    *
-   * @param worker
+   * @param worker {String|Worker}
+   * @param type {String}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
    * @extends WorkerMessenger
    * @constructor
    */
-  function WorkerEventDispatcher(worker, type) {
+  function WorkerEventDispatcher(worker, type, receiverEventPreprocessor, senderEventPreprocessor) {
     if (worker === NOINIT) {
       Object.defineProperties(this, {
         type: {
@@ -693,7 +730,7 @@
         }
       });
     } else {
-      DedicatedWorkerEventDispatcher.call(this, worker);
+      DedicatedWorkerEventDispatcher.call(this, worker, receiverEventPreprocessor, senderEventPreprocessor);
     }
   }
   
@@ -705,32 +742,46 @@
   WorkerEventDispatcher.Server = ServerEventDispatcher;
   WorkerEventDispatcher.Client = ClientEventDispatcher;
   
-  WorkerEventDispatcher.create = function(target, type) {
+  /**
+   *
+   * @param worker {String|Worker|SharedWorker|MessagePort}
+   * @param type {String}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
+   * @returns {WorkerEventDispatcher}
+   */
+  WorkerEventDispatcher.create = function(target, type, receiverEventPreprocessor, senderEventPreprocessor) {
     var dispatcher = null;
     switch (type) {
       default:
       case WorkerType.DEDICATED_WORKER:
-        dispatcher = new DedicatedWorkerEventDispatcher(target);
+        dispatcher = new DedicatedWorkerEventDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
         break;
       case WorkerType.SHARED_WORKER:
-        dispatcher = new SharedWorkerEventDispatcher(target);
+        dispatcher = new SharedWorkerEventDispatcher(target, null, receiverEventPreprocessor, senderEventPreprocessor);
         break;
       case WorkerType.SHARED_WORKER_SERVER:
-        dispatcher = new ServerEventDispatcher(target);
+        dispatcher = new ServerEventDispatcher(target, receiverEventPreprocessor);
         break;
       case WorkerType.SHARED_WORKER_CLIENT:
-        dispatcher = new ClientEventDispatcher(target);
+        dispatcher = new ClientEventDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
         break;
     }
     return dispatcher;
   }
   
-  WorkerEventDispatcher.self = function() {
+  /**
+   *
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
+   * @returns {WorkerEventDispatcher}
+   */
+  WorkerEventDispatcher.self = function(receiverEventPreprocessor, senderEventPreprocessor) {
     var dispatcher = null;
     if (typeof(self.postMessage) === 'function') {
-      dispatcher = new DedicatedWorkerEventDispatcher(self);
+      dispatcher = new DedicatedWorkerEventDispatcher(self, receiverEventPreprocessor, senderEventPreprocessor);
     } else {
-      dispatcher = new ServerEventDispatcher(self);
+      dispatcher = new ServerEventDispatcher(self, receiverEventPreprocessor);
     }
     return dispatcher;
   };
