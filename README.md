@@ -19,7 +19,7 @@ If you want to use it with [npm](https://www.npmjs.com/) package manger, add it 
 Also WorkerEventDispatcher has standalone distribution file that includes all dependencies, so you can just [download single file](https://github.com/burdiuz/js-worker-event-dispatcher/blob/master/dist/worker-event-dispatcher.standalone.min.js) with everything needed to start using it.
 
 ## Usage
-WorkerEventDispatcher should be used on HTML page and inside Worker to properly handle communication.
+WorkerEventDispatcher should be used on HTML page and in Worker script to properly handle communication.
 
 #### Dedicated Worker
 WorkerEventDispatcher for Dedicated Worker can be created via operator `new`
@@ -34,7 +34,7 @@ var dispatcher = WorkerEventDispatcher.create(worker);
 /* or you can specify worker type */
 var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.DEDICATED_WORKER);
 ```
-Within Worker it can be created via `WorkerEventDispatcher.self()`, don't need to pass anything, it grabs Worker's global scope object to communicate.
+Within Worker script it can be created via `WorkerEventDispatcher.self()`, don't need to pass anything, it grabs Worker's global scope object to communicate.
 ```javascript 
 var dispatcher = WorkerEventDispatcher.self();
 ```
@@ -97,8 +97,13 @@ Project contains `example` folder with examples for Dedicated and Shared workers
  - *type?:String - argument used internally to generate type property in prototype.*
 
 #### WorkerEventDispatcher shared instance members
-
- - type:String  - type of the worker
+ - **type**:String  - type of the worker
+ - **addEventListener**(eventType:String, listener:Function):void - add listener for incoming events. This method copied from `receiver`.
+ - **hasEventListener**(eventType:String):Boolean - check if incoming event has listeners. This method copied from `receiver`.
+ - **removeEventListener**(eventType:String, listener:Function):void - remove event listener for incoming event. This method copied from `receiver`.
+ - **removeAllEventListeners**(eventType:String):void - remove all listeners for incoming event. This method copied from `receiver`.
+ - **dispatchEvent**(event:Object):void - does not fire event, it sends event to `postMessage()`. Can be used with two arguments:
+  - dispatchEvent(eventType:String, data?:Object):void
 
 #### WorkerEventDispatcher static members
 
