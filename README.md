@@ -19,6 +19,8 @@ If you want to use it with [npm](https://www.npmjs.com/) package manger, add it 
 Also WorkerEventDispatcher has standalone distribution file that includes all dependencies, so you can just [download single file](https://github.com/burdiuz/js-worker-event-dispatcher/blob/master/dist/worker-event-dispatcher.standalone.min.js) with everything needed to start using it.
 
 ## Usage
+WorkerEventDispatcher should be used on HTML page and inside Worker to properly handle communication.
+
 #### Dedicated Worker
 WorkerEventDispatcher for Dedicated Worker can be created via operator `new`
 ```javascript
@@ -49,7 +51,7 @@ To use WorkerEventDispatcher with Shared Worker, it should be created via `Worke
  var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.SHARED_WORKER);
  dispatcher.start();
 ```
-Within SharedWorker it can be created via `WorkerEventDispatcher.self()`. WorkerEventDispatcher's for clients will be created automatically.
+Within SharedWorker it can be created via `WorkerEventDispatcher.self()`. WorkerEventDispatcher's for client connections will be created automatically.
 ```javascript
 var dispatcher = WorkerEventDispatcher.self();
 dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
@@ -62,8 +64,85 @@ dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(
 });
 ```
 
+#### Sending and receiving messages
+To send messages use `dispatchEvent()` event and to receive messages add event listeners. Sent events will not be fired for sender dispatcher, so you cannot listen for event you just sent
+```javascript 
+var dispatcher = new WorkerEventDispatcher('/workers/worker.js');
+dispatcher.addEventListener('anyEvent', function(){
+	console.log('Event received');
+});
+dispatcher.dispatchEvent('anyEvent');
+```
+In this case event listener will not be called, but if other side will send `"anyEvent"` event, this listener will be called.
+On HTML page:
+```javascript
+var dispatcher = new WorkerEventDispatcher('/workers/worker.js');
+dispatcher.addEventListener('anyEvent', function(event) {
+	console.log('Event received');
+});
+```
+Worker code:
+```javascript
+var dispatcher = WorkerEventDispatcher.self();
+dispatcher.dispatchEvent('anyEvent');
+```
+
+Project contains `example` folder with examples for Dedicated and Shared workers communication built with WorkerEventDispatcher.
+
 ## API
+#### WorkerEventDispatcher constructor arguments
+ - **worker**:Worker|MessagePort|String - Worker instance or URL string for worker script.
+ - **receiverEventPreprocessor**:Function - Optional, allows pre-processing of events and their data before firing event.
+ - **senderEventPreprocessor**:Function - Optional, allows pre-processing of events and their data before passing them to `postMessage`.
+ - *type?:String - argument used internally to generate type property in prototype.*
 
+#### WorkerEventDispatcher shared instance members
 
+ - type:String  - type of the worker
+
+#### WorkerEventDispatcher static members
+
+ - **WorkerEvent**:Object 
+ - **WorkerType**:Object 
+ - **DEDICATED_WORKER**:String 
+ - **SHARED_WORKER**:String 
+ - **DedicatedWorkerEventDispatcher**:Function 
+ - **SharedWorkerEventDispatcher**:Function 
+ - **ServerEventDispatcher**:Function 
+ - **ClientEventDispatcher**:Function 
+ - **create**(target, type, receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher 
+ - **self**(receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher
+
+#### DedicatedWorkerEventDispatcher
+Created when WorkerEventDispatcher.DEDICATED_WORKER used, when WorkerEventDispatcher.self() called in Dedicated Worker or when WorkerEventDispatcher called with `new` operator.
+
+#### SharedWorkerEventDispatcher
+Created when WorkerEventDispatcher.SHARED_WORKER used. When created using `WorkerEventDispatcher.create()`, worker's name will default to `null`, if you need to specify name, you can instantiate it with constructor.
+```javascript
+var dispatcher = new WorkerEventDispatcher.SharedWorkerEventDispatcher('/workers/sharedworker.js', 'worker-name');
+``` 
+
+#### ServerEventDispatcher
+Created when WorkerEventDispatcher.self() called in Shared Worker. It difers from other types of WorkerEventDispatcher's because does not have `dispatchEvent()` method, so it can only listen for events, like WorkerEvent.CONNECT to accept connections. Since it cannot send data, it does not have `sender` EventDispatcher, only `receiver` available.
+
+#### ClientEventDispatcher
+Created when Shared Worker gets new connection. to capture new connections, you shuld listen to WorkerEvent.CONNECT event.
+```javascript
+var _clients = [];
+// Create ServerEventDispatcher
+var dispatcher = WorkerEventDispatcher.self();
+// Listen to incoming connections
+dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
+  // Get ClientEventDispatcher of new connection from event, save and start it
+  var client = event.client;
+  _clients.push(client);
+  client.start();
+  client.dispatchEvent('initialize');
+});
+```
+ - **start**():void - Start communication with client
+ - **close**():void - Close connection to client
+  
 ### Links
+[MDN - Using web workers](https://developer.mozilla.org/ru/docs/DOM/Using_web_workers)
 [https://www.w3.org/TR/workers/](https://www.w3.org/TR/workers/)
