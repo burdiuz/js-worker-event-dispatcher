@@ -97,7 +97,11 @@ Project contains `example` folder with examples for Dedicated and Shared workers
  - *type?:String - argument used internally to generate type property in prototype.*
 
 #### WorkerEventDispatcher shared instance members
+WorkerEventDispatcher is a base class and it shares functionality across all types of WorkerEventDispatcher's. When WorkerEventDispatcher instantiated directly, it actually creates DedicatedWorkerEventDispatcher.
+
  - **type**:String  - type of the worker
+ - **sender**:EventDispatcher - fires outgoing events that are passed to `postMessage()`
+ - **receiver**:EventDispatcher - fires incoming events received from other origin
  - **addEventListener**(eventType:String, listener:Function):void - add listener for incoming events. This method copied from `receiver`.
  - **hasEventListener**(eventType:String):Boolean - check if incoming event has listeners. This method copied from `receiver`.
  - **removeEventListener**(eventType:String, listener:Function):void - remove event listener for incoming event. This method copied from `receiver`.
