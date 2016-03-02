@@ -99,7 +99,7 @@ Project contains `example` folder with examples for Dedicated and Shared workers
 #### WorkerEventDispatcher shared instance members
 WorkerEventDispatcher is a base class and it shares functionality across all types of WorkerEventDispatcher's. When WorkerEventDispatcher instantiated directly, it actually creates DedicatedWorkerEventDispatcher.
 
- - **type**:String  - type of the worker
+ - **type**:String  - type of the worker  
 Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-messageport-event-dispatcher/blob/master/README.md#messageportdispatcher-instance-members), some most important:
  - **addEventListener**(eventType:String, listener:Function):void - add listener for incoming events. This method copied from `receiver`.
  - **hasEventListener**(eventType:String):Boolean - check if incoming event has listeners. This method copied from `receiver`.
