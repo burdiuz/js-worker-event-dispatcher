@@ -121,6 +121,8 @@ Project contains `example` folder with examples for Dedicated and Shared workers
 #### DedicatedWorkerEventDispatcher
 Created when WorkerEventDispatcher.DEDICATED_WORKER used, when WorkerEventDispatcher.self() called in Dedicated Worker or when WorkerEventDispatcher called with `new` operator.
 
+ - **terminate**():void - close connection to worker, i.e. destroy worker.
+
 #### SharedWorkerEventDispatcher
 Created when WorkerEventDispatcher.SHARED_WORKER used. When created using `WorkerEventDispatcher.create()`, worker's name will default to `null`, if you need to specify name, you can instantiate it with constructor.
 ```javascript
@@ -128,7 +130,7 @@ var dispatcher = new WorkerEventDispatcher.SharedWorkerEventDispatcher('/workers
 ``` 
 
 #### ServerEventDispatcher
-Created when WorkerEventDispatcher.self() called in Shared Worker. It difers from other types of WorkerEventDispatcher's because does not have `dispatchEvent()` method, so it can only listen for events, like WorkerEvent.CONNECT to accept connections. Since it cannot send data, it does not have `sender` EventDispatcher, only `receiver` available.
+Created when WorkerEventDispatcher.self() called in Shared Worker. It differs from other types of WorkerEventDispatcher's because **does not have `dispatchEvent()` method**, so it can only listen for events, like WorkerEvent.CONNECT to accept connections. Since it cannot send data, it does not have `sender` EventDispatcher either, only `receiver` available.
 
 #### ClientEventDispatcher
 Created when Shared Worker gets new connection. to capture new connections, you shuld listen to WorkerEvent.CONNECT event.
