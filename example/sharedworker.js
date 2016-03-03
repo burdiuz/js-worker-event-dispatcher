@@ -30,7 +30,7 @@ function getHistory() {
 }
 
 var dispatcher = WorkerEventDispatcher.self();
-dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(event) {
+dispatcher.addEventListener(WorkerEventDispatcher.CONNECT_EVENT, function(event) {
   var client = event.client;
   _clients.push(client);
 

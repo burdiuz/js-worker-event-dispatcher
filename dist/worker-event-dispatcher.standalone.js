@@ -284,6 +284,7 @@
           dispatcherId: this.dispatcherId
         };
       }
+    
       MessagePortEvent.prototype.toJSON = toJSON;
     
       function fromJSON(object) {
@@ -295,11 +296,13 @@
         }
         return result;
       }
+    
       MessagePortEvent.fromJSON = fromJSON;
     
       function isEvent(object) {
         return EventDispatcher.isObject(object) && object.hasOwnProperty('dispatcherId') && object.hasOwnProperty('event');
       }
+    
       MessagePortEvent.isEvent = isEvent;
     
       return MessagePortEvent;
@@ -322,7 +325,7 @@
       /**
        * @type {EventDispatcher}
        */
-      var _sender = new EventDispatcher(senderEventPreprocessor);
+      var _sender = new EventDispatcher();
       /**
        * @type {EventDispatcher}
        */
@@ -341,6 +344,9 @@
     
       function dispatchEvent(event, data, transferList) {
         event = EventDispatcher.getEvent(event, data);
+        if (senderEventPreprocessor) {
+          event = senderEventPreprocessor.call(this, event);
+        }
         var eventJson = MessagePortDispatcher.toJSON(new MessagePortEvent(event, _dispatcherId));
         postMessageHandler.call(this, eventJson, transferList);
       }
@@ -638,7 +644,7 @@
       }
     });
   }
-  ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER_SERVER);
+  ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.SHARED_WORKER_SERVER);
   ServerEventDispatcher.prototype.constructor = ServerEventDispatcher;
   
   /**
@@ -662,7 +668,7 @@
     this.start = start;
     this.close = close;
   }
-  ClientEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER_CLIENT);
+  ClientEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.SHARED_WORKER_CLIENT);
   ClientEventDispatcher.prototype.constructor = ClientEventDispatcher;
   
   /**
@@ -683,7 +689,7 @@
     ClientEventDispatcher.call(this, _target.port, receiverEventPreprocessor, senderEventPreprocessor);
     WorkerMessenger.setAbstractWorkerHandlers(_target, this.receiver);
   }
-  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.SHARED_WORKER);
+  SharedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.SHARED_WORKER);
   SharedWorkerEventDispatcher.prototype.constructor = SharedWorkerEventDispatcher;
   
   /**
@@ -710,7 +716,7 @@
   
     this.terminate = terminate;
   }
-  DedicatedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, WorkerType.DEDICATED_WORKER);
+  DedicatedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.DEDICATED_WORKER);
   DedicatedWorkerEventDispatcher.prototype.constructor = DedicatedWorkerEventDispatcher;
   
   /**
@@ -722,7 +728,7 @@
    * @extends WorkerMessenger
    * @constructor
    */
-  function WorkerEventDispatcher(worker, type, receiverEventPreprocessor, senderEventPreprocessor) {
+  function WorkerEventDispatcher(worker, receiverEventPreprocessor, senderEventPreprocessor, type) {
     if (worker === NOINIT) {
       Object.defineProperties(this, {
         type: {
@@ -736,9 +742,12 @@
   
   WorkerEventDispatcher.WorkerEvent = WorkerEvent;
   WorkerEventDispatcher.WorkerType = WorkerType;
+  WorkerEventDispatcher.CONNECT_EVENT = WorkerEvent.CONNECT;
+  WorkerEventDispatcher.DEDICATED_WORKER = WorkerType.DEDICATED_WORKER;
+  WorkerEventDispatcher.SHARED_WORKER = WorkerType.SHARED_WORKER;
   
-  WorkerEventDispatcher.Dedicated = DedicatedWorkerEventDispatcher;
-  WorkerEventDispatcher.Shared = SharedWorkerEventDispatcher;
+  WorkerEventDispatcher.DedicatedWorker = DedicatedWorkerEventDispatcher;
+  WorkerEventDispatcher.SharedWorker = SharedWorkerEventDispatcher;
   WorkerEventDispatcher.Server = ServerEventDispatcher;
   WorkerEventDispatcher.Client = ClientEventDispatcher;
   
@@ -768,7 +777,7 @@
         break;
     }
     return dispatcher;
-  }
+  };
   
   /**
    *
