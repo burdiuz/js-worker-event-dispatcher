@@ -15,7 +15,7 @@
     // SharedWorker UI
     (function() {
       var worker = new SharedWorker('sharedworker.js');
-      var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.WorkerType.SHARED_WORKER);
+      var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.SHARED_WORKER);
 
       dispatcher.addEventListener('handshake', function(event) {
         name = event.data.name;
