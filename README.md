@@ -109,17 +109,18 @@ Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-m
 
 #### WorkerEventDispatcher static members
 
- - **WorkerEvent**:Object - Worker event types 
-   - **CONNECT**:String - Mirroring connect event fired from WorkerGlobalScope, fired when new client connected. Event object contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
-   - **ERROR**:String - Mirroring [error event](https://developer.mozilla.org/en-US/docs/Web/Events/error) fired from WorkerGlobalScope
-   - **LANGUAGECHANGE**:String -  Mirroring [languagechange event](https://developer.mozilla.org/en-US/docs/Web/Events/languagechange) fired from WorkerGlobalScope
-   - **ONLINE**:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope 
-   - **OFFLINE**:String - Mirroring [offline event](https://developer.mozilla.org/en-US/docs/Web/Events/offline) fired from WorkerGlobalScope
+ - **CONNECT_EVENT**:String - Short of `WorkerEvent.CONNECT`. Event fired in Shared Worker script when new client is available.
  - **DEDICATED_WORKER**:String - Short of `WorkerType.DEDICATED_WORKER`
  - **SHARED_WORKER**:String - Short of `WorkerType.SHARED_WORKER`
  - **create**(target:String|Worker|SharedWorker, type?:String, receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher - Creates WorkerEventDispatcher instance based on type. Currently supported types are `WorkerEventDispatcher.DEDICATED_WORKER` and `WorkerEventDispatcher.SHARED_WORKER`. By default will create dispatcher for Dedicated Worker.
  - **self**(receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher - Can be used in Worker script, it checks what kind of worker is used and returns proper dispatcher object for WorkerGlobalScope. For Dedicated Worker returns instance of DedicatedWorkerEventDispatcher and for Shared Worker -- ServerEventDispatcher.
 
+ - WorkerEvent:Object - Worker event types 
+   - CONNECT:String - Mirroring connect event fired from WorkerGlobalScope, fired when new client connected. Event object contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
+   - ERROR:String - Mirroring [error event](https://developer.mozilla.org/en-US/docs/Web/Events/error) fired from WorkerGlobalScope
+   - LANGUAGECHANGE:String -  Mirroring [languagechange event](https://developer.mozilla.org/en-US/docs/Web/Events/languagechange) fired from WorkerGlobalScope
+   - ONLINE:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope 
+   - OFFLINE:String - Mirroring [offline event](https://developer.mozilla.org/en-US/docs/Web/Events/offline) fired from WorkerGlobalScope
  - WorkerType:Object - Possible dispatcher types, used with `WorkerEventDispatcher.create()`
    - DEDICATED_WORKER:String - Default type, will create DedicatedWorkerEventDispatcher
    - SHARED_WORKER:String - Will create SharedWorkerEventDispatcher
