@@ -110,7 +110,7 @@ Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-m
 #### WorkerEventDispatcher static members
 
  - **WorkerEvent**:Object - Worker event types 
-   - **CONNECT**:String - Event fired when new client connected, event contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
+   - **CONNECT**:String - Mirroring connect event fired from WorkerGlobalScope, fired when new client connected. Event object contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
    - **ERROR**:String - Mirroring [error event](https://developer.mozilla.org/en-US/docs/Web/Events/error) fired from WorkerGlobalScope
    - **LANGUAGECHANGE**:String -  Mirroring [languagechange event](https://developer.mozilla.org/en-US/docs/Web/Events/languagechange) fired from WorkerGlobalScope
    - **ONLINE**:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope 
