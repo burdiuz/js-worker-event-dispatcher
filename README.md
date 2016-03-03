@@ -109,19 +109,30 @@ Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-m
 
 #### WorkerEventDispatcher static members
 
- - **WorkerEvent**:Object 
- - **WorkerType**:Object 
- - **DEDICATED_WORKER**:String 
- - **SHARED_WORKER**:String 
- - **DedicatedWorkerEventDispatcher**:Function 
- - **SharedWorkerEventDispatcher**:Function 
- - **ServerEventDispatcher**:Function 
- - **ClientEventDispatcher**:Function 
- - **create**(target, type, receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher 
- - **self**(receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher
+ - **WorkerEvent**:Object - Worker event types 
+   - **CONNECT**:String - Event fired when new client connected, event contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
+   - **ERROR**:String - Mirroring [error event](https://developer.mozilla.org/en-US/docs/Web/Events/error) fired from WorkerGlobalScope
+   - **LANGUAGECHANGE**:String -  Mirroring [languagechange event](https://developer.mozilla.org/en-US/docs/Web/Events/languagechange) fired from WorkerGlobalScope
+   - **ONLINE**:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope 
+   - **OFFLINE**:String - Mirroring [offline event](https://developer.mozilla.org/en-US/docs/Web/Events/offline) fired from WorkerGlobalScope
+ - **DEDICATED_WORKER**:String - Short of `WorkerType.DEDICATED_WORKER`
+ - **SHARED_WORKER**:String - Short of `WorkerType.SHARED_WORKER`
+ - **create**(target:String|Worker|SharedWorker, type?:String, receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher - Creates WorkerEventDispatcher instance based on type. Currently supported types are `WorkerEventDispatcher.DEDICATED_WORKER` and `WorkerEventDispatcher.SHARED_WORKER`. By default will create dispatcher for Dedicated Worker.
+ - **self**(receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerEventDispatcher - Can be used in Worker script, it checks what kind of worker is used and returns proper dispatcher object for WorkerGlobalScope. For Dedicated Worker returns instance of DedicatedWorkerEventDispatcher and for Shared Worker -- ServerEventDispatcher.
+
+ - WorkerType:Object - Possible dispatcher types, used with `WorkerEventDispatcher.create()`
+   - DEDICATED_WORKER:String - Default type, will create DedicatedWorkerEventDispatcher
+   - SHARED_WORKER:String - Will create SharedWorkerEventDispatcher
+   - SHARED_WORKER_SERVER:String - For internal usage, will create ServerEventDispatcher
+   - SHARED_WORKER_CLIENT:String - For internal usage, will create ClientEventDispatcher
+ - DedicatedWorker:Function - Constructor of DedicatedWorkerEventDispatcher
+ - SharedWorker:Function - Constructor of SharedWorkerEventDispatcher 
+ - Server:Function - Constructor of ServerEventDispatcher
+ - Client:Function - Constructor of ClientEventDispatcher
+
 
 #### DedicatedWorkerEventDispatcher
-Created when WorkerEventDispatcher.DEDICATED_WORKER used, when WorkerEventDispatcher.self() called in Dedicated Worker or when WorkerEventDispatcher called with `new` operator.
+Created when `WorkerEventDispatcher.DEDICATED_WORKER` used, when `WorkerEventDispatcher.self()` called in Dedicated Worker or when WorkerEventDispatcher called with `new` operator.
 
  - **terminate**():void - close connection to worker, i.e. destroy worker.
 
@@ -136,6 +147,10 @@ Created when WorkerEventDispatcher.self() called in Shared Worker. It differs fr
 
 #### ClientEventDispatcher
 Created when Shared Worker gets new connection. to capture new connections, you shuld listen to WorkerEvent.CONNECT event.
+
+ - **start**():void - Start communication with client
+ - **close**():void - Close connection to client
+
 ```javascript
 var _clients = [];
 // Create ServerEventDispatcher
@@ -149,8 +164,6 @@ dispatcher.addEventListener(WorkerEventDispatcher.WorkerEvent.CONNECT, function(
   client.dispatchEvent('initialize');
 });
 ```
- - **start**():void - Start communication with client
- - **close**():void - Close connection to client
   
 ### Links
 [MDN - Using web workers](https://developer.mozilla.org/ru/docs/DOM/Using_web_workers)
