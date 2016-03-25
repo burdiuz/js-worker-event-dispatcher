@@ -5,14 +5,14 @@
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module.
-    define(['EventDispatcher', 'MessagePortDispatcher'], factory);
+    define(['event-dispatcher', 'messageport-dispatcher'], factory);
   } else if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
     module.exports = factory(
-      require('EventDispatcher'),
-      require('MessagePortDispatcher')
+      require('event-dispatcher'),
+      require('messageport-dispatcher')
     );
   } else {
     // Browser globals (root is window)

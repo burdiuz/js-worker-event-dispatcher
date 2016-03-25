@@ -17,11 +17,11 @@
   }
 }(this, function () {
   var EventDispatcher = (function() {
-    //=include ../bower_components/event-dispatcher/source/event-dispatcher.js
+    //=include ../node_modules/event-dispatcher/source/event-dispatcher.js
     return EventDispatcher;
   })();
   var MessagePortDispatcher = (function() {
-    //=include ../bower_components/messageport-dispatcher/source/messageport-dispatcher.js
+    //=include ../node_modules/messageport-dispatcher/source/messageport-dispatcher.js
     return MessagePortDispatcher;
   })();
   // here should be injected worker-event-dispatcher.js content
