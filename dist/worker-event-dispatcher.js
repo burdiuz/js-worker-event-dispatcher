@@ -147,13 +147,16 @@
      * @constructor
      */
     function WorkerMessenger(port, receiverEventPreprocessor, senderEventPreprocessor) {
-  
+      if (port === NOINIT) return;
       function postMessageHandler(data, transferList) {
         port.postMessage(data, transferList);
       }
   
       MessagePortDispatcher.call(this, port, postMessageHandler, receiverEventPreprocessor, senderEventPreprocessor);
     }
+  
+    WorkerMessenger.prototype = MessagePortDispatcher.createNoInitPrototype();
+    WorkerMessenger.prototype.constructor = WorkerMessenger;
   
     function setScopeHandlers(source, target) {
       WorkerEvent.createHandler(Event.ERROR, source, target);
@@ -167,10 +170,44 @@
     function setAbstractWorkerHandlers(source, target) {
       WorkerEvent.createHandler(Event.ERROR, source, target);
     }
+    function createNoInitPrototype() {
+      return new WorkerMessenger(NOINIT);
+    }
+  
+    WorkerMessenger.createNoInitPrototype = createNoInitPrototype;
   
     WorkerMessenger.setAbstractWorkerHandlers = setAbstractWorkerHandlers;
     return WorkerMessenger;
   })();
+  
+  /**
+   *
+   * @param worker {String|Worker}
+   * @param type {String}
+   * @param receiverEventPreprocessor {?Function}
+   * @param senderEventPreprocessor {?Function}
+   * @extends WorkerMessenger
+   * @constructor
+   */
+  function WorkerEventDispatcher(worker, receiverEventPreprocessor, senderEventPreprocessor, type) {
+    if (worker === NOINIT) {
+      Object.defineProperties(this, {
+        type: {
+          value: type
+        }
+      });
+    } else {
+      Object.defineProperties(this, {
+        type: {
+          value: WorkerType.DEDICATED_WORKER
+        }
+      });
+      DedicatedWorkerEventDispatcher.call(this, worker, receiverEventPreprocessor, senderEventPreprocessor);
+    }
+  }
+  
+  WorkerEventDispatcher.prototype = WorkerMessenger.createNoInitPrototype();
+  WorkerEventDispatcher.prototype.constructor = WorkerEventDispatcher;
   
   /**
    *
@@ -196,10 +233,10 @@
   
     _target.addEventListener('connect', connectHandler);
   
-    this.addEventListener = _receiver.addEventListener;
-    this.hasEventListener = _receiver.hasEventListener;
-    this.removeEventListener = _receiver.removeEventListener;
-    this.removeAllEventListeners = _receiver.removeAllEventListeners;
+    this.addEventListener = _receiver.addEventListener.bind(_receiver);
+    this.hasEventListener = _receiver.hasEventListener.bind(_receiver);
+    this.removeEventListener = _receiver.removeEventListener.bind(_receiver);
+    this.removeAllEventListeners = _receiver.removeAllEventListeners.bind(_receiver);
   
     WorkerMessenger.setScopeHandlers(_target, _receiver);
   
@@ -209,10 +246,14 @@
       },
       target: {
         value: _target
+      },
+      type: {
+        value: WorkerType.SHARED_WORKER_SERVER
       }
     });
   }
-  ServerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.SHARED_WORKER_SERVER);
+  
+  ServerEventDispatcher.prototype = EventDispatcher.createNoInitPrototype();
   ServerEventDispatcher.prototype.constructor = ServerEventDispatcher;
   
   /**
@@ -286,27 +327,6 @@
   }
   DedicatedWorkerEventDispatcher.prototype = new WorkerEventDispatcher(NOINIT, null, null, WorkerType.DEDICATED_WORKER);
   DedicatedWorkerEventDispatcher.prototype.constructor = DedicatedWorkerEventDispatcher;
-  
-  /**
-   *
-   * @param worker {String|Worker}
-   * @param type {String}
-   * @param receiverEventPreprocessor {?Function}
-   * @param senderEventPreprocessor {?Function}
-   * @extends WorkerMessenger
-   * @constructor
-   */
-  function WorkerEventDispatcher(worker, receiverEventPreprocessor, senderEventPreprocessor, type) {
-    if (worker === NOINIT) {
-      Object.defineProperties(this, {
-        type: {
-          value: type
-        }
-      });
-    } else {
-      DedicatedWorkerEventDispatcher.call(this, worker, receiverEventPreprocessor, senderEventPreprocessor);
-    }
-  }
   
   WorkerEventDispatcher.WorkerEvent = WorkerEvent;
   WorkerEventDispatcher.WorkerType = WorkerType;
