@@ -9,8 +9,8 @@ describe('ServerEventDispatcher', function() {
     worker = new MessagePortBase();
     dispatcher = new ServerEventDispatcher(worker);
   });
-  it('should extend WorkerEventDispatcher', function() {
-    expect(dispatcher).to.be.an.instanceof(WorkerEventDispatcher);
+  it('should extend EventDispatcher', function() {
+    expect(dispatcher).to.be.an.instanceof(EventDispatcher);
   });
   it('should add listeners to events', function() {
     expect(worker.addEventListener).to.be.calledWith(Event.ERROR);
