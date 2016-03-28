@@ -282,6 +282,11 @@ function WorkerEventDispatcher(worker, receiverEventPreprocessor, senderEventPre
       }
     });
   } else {
+    Object.defineProperties(this, {
+      type: {
+        value: WorkerType.DEDICATED_WORKER
+      }
+    });
     DedicatedWorkerEventDispatcher.call(this, worker, receiverEventPreprocessor, senderEventPreprocessor);
   }
 }

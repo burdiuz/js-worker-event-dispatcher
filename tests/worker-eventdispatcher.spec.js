@@ -41,4 +41,14 @@ describe('WorkerEventDispatcher', function() {
       });
     });
   });
+  describe('When instantiating WorkerEventDispatcher', function() {
+    var instance;
+    beforeEach(function() {
+      instance = new WorkerEventDispatcher(new Worker());
+    });
+    it('shound create instance with DedicatedWED functionality', function(){
+      expect(instance.type).to.be.equal(WorkerType.DEDICATED_WORKER);
+      expect(instance.terminate).to.be.a('function');
+    });
+  });
 });
