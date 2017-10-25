@@ -22,7 +22,7 @@
     (function() {
       // Are equivalents:
       //var workerApi = new WorkerEventDispatcher('webworker.js');
-      var workerApi = new WorkerEventDispatcher(new Worker('webworker.js'));
+      var workerApi = new AbstractDispatcher(new Worker('webworker.js'));
       //var workerApi = new WorkerEventDispatcher.create('webworker.js', WorkerEventDispatcher.WorkerType.DEDICATED_WORKER);
       // Event type string may be of any format, WorkerEventDispatcher does not depend on it.
       // I've used "namespace:local" string

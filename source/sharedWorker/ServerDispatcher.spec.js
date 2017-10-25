@@ -1,14 +1,25 @@
 /**
  * Created by Oleg Galaburda on 15.02.16.
  */
-describe('ServerEventDispatcher', function() {
 
-  var worker = null;
-  var dispatcher = null;
+import ServerDispatcher from './ServerDispatcher';
+import apply, {
+  Worker,
+  SharedWorker,
+  EventTarget,
+  MessagePort,
+  MessagePortBase
+} from '../../tests/stubs';
+
+describe('ServerDispatcher', function() {
+  let worker;
+  let dispatcher;
+
   beforeEach(function() {
     worker = new MessagePortBase();
     dispatcher = new ServerEventDispatcher(worker);
   });
+
   it('should extend EventDispatcher', function() {
     expect(dispatcher).to.be.an.instanceof(EventDispatcher);
   });

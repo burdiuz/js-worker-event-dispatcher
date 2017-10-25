@@ -6,14 +6,11 @@ import ClientDispatcher from './sharedWorker/ClientDispatcher';
 import ServerDispatcher from './sharedWorker/ServerDispatcher';
 import { create, createForSelf } from './utils/create';
 
-
 const CONNECT_EVENT = WorkerEvent.CONNECT;
 const { DEDICATED_WORKER } = WorkerType;
 const { SHARED_WORKER } = WorkerType;
 
-export default DedicatedWorkerDispatcher;
-
-export {
+module.exports = Object.assign(DedicatedWorkerDispatcher, {
   create,
   createForSelf,
   CONNECT_EVENT,
@@ -25,4 +22,4 @@ export {
   ServerDispatcher,
   SharedWorkerDispatcher,
   DedicatedWorkerDispatcher,
-};
+});

@@ -1,4 +1,4 @@
-export const NativeEvent = {
+export const NativeEventTypes = {
   CONNECT: 'connect',
   MESSAGE: 'message',
   ERROR: 'error',
@@ -20,35 +20,48 @@ class WorkerEvent extends Event {
     this.sourceEvent = sourceEvent;
     this.client = client;
   }
-
-  static createHandler(type, target, dispatcher) {
-    const eventType = WorkerEvent.getWorkerEventType(type);
-    const handler = (event) => {
-      if (dispatcher.hasEventListener(eventType)) {
-        dispatcher.dispatchEvent(new WorkerEvent(eventType, event, event));
-      }
-    };
-
-    target.addEventListener(type, handler);
-    return handler;
-  }
-
-  static getWorkerEventType(type) {
-    switch (type) {
-      case NativeEvent.CONNECT:
-        return WorkerEvent.CONNECT;
-      case NativeEvent.MESSAGE:
-        return WorkerEvent.MESSAGE;
-      case NativeEvent.ERROR:
-        return WorkerEvent.ERROR;
-      case NativeEvent.LANGUAGECHANGE:
-        return WorkerEvent.LANGUAGECHANGE;
-      case NativeEvent.ONLINE:
-        return WorkerEvent.ONLINE;
-      case NativeEvent.OFFLINE:
-        return WorkerEvent.OFFLINE;
-    }
-  }
 }
+
+export const getWorkerEventType = (type) => {
+  switch (type) {
+    case NativeEventTypes.CONNECT:
+      return WorkerEvent.CONNECT;
+    case NativeEventTypes.MESSAGE:
+      return WorkerEvent.MESSAGE;
+    case NativeEventTypes.ERROR:
+      return WorkerEvent.ERROR;
+    case NativeEventTypes.LANGUAGECHANGE:
+      return WorkerEvent.LANGUAGECHANGE;
+    case NativeEventTypes.ONLINE:
+      return WorkerEvent.ONLINE;
+    case NativeEventTypes.OFFLINE:
+      return WorkerEvent.OFFLINE;
+    default:
+      return null;
+  }
+};
+
+export const dispatchWorkerEvent = (type, source, target) => {
+  const eventType = getWorkerEventType(type);
+  const handler = (event) => {
+    if (target.hasEventListener(eventType)) {
+      target.dispatchEvent(new WorkerEvent(eventType, event, event));
+    }
+  };
+
+  source.addEventListener(type, handler);
+  return handler;
+};
+
+export const dispatchWorkerEvents = (source, target) => {
+  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventTypes.LANGUAGECHANGE, source, target);
+  dispatchWorkerEvent(NativeEventTypes.ONLINE, source, target);
+  dispatchWorkerEvent(NativeEventTypes.OFFLINE, source, target);
+};
+
+export const dispatchWorkerErrorEvent = (source, target) => {
+  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
+};
 
 export default WorkerEvent;

@@ -4,7 +4,7 @@
 importScripts(
   '../dist/worker-event-dispatcher.standalone.js'
 );
-var api = WorkerEventDispatcher.self();
+var api = AbstractDispatcher.self();
 api.addEventListener('time:request', function() {
   setTimeout(function() {
     api.dispatchEvent('time:response', Date.now());

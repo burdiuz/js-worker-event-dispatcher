@@ -2,43 +2,57 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-describe('ClientEventDispatcher', function() {
-  var port = null;
-  var dispatcher = null;
-  beforeEach(function() {
+import ClientDispatcher from './ClientDispatcher';
+import apply, {
+  Worker,
+  SharedWorker,
+  EventTarget,
+  MessagePort,
+  MessagePortBase
+} from '../../tests/stubs';
+
+describe('ClientDispatcher', () => {
+  let port;
+  let dispatcher;
+
+  beforeEach(() => {
     port = new MessagePort();
-    dispatcher = new ClientEventDispatcher(port);
+    dispatcher = new ClientDispatcher(port);
   });
-  it('should extend WorkerEventDispatcher', function() {
-    expect(dispatcher).to.be.an.instanceof(WorkerEventDispatcher);
-  });
-  it('should have WorkerMessenger interface', function() {
+
+  it('should have WorkerMessenger interface', () => {
     expect(dispatcher.addEventListener).to.be.a('function');
     expect(dispatcher.hasEventListener).to.be.a('function');
     expect(dispatcher.removeEventListener).to.be.a('function');
     expect(dispatcher.removeAllEventListeners).to.be.a('function');
     expect(dispatcher.dispatchEvent).to.be.a('function');
   });
-  it('should call port.addEventListener()', function() {
+
+  it('should call port.addEventListener()', () => {
     expect(port.addEventListener).to.be.calledWith(Event.MESSAGE);
   });
-  it('should call port.postMessage()', function() {
+
+  it('should call port.postMessage()', () => {
     dispatcher.dispatchEvent({type: 'meMyself', data: 'Irene'});
     expect(port.postMessage).to.be.calledOnce;
   });
-  describe('start()', function() {
-    beforeEach(function() {
+
+  describe('start()', () => {
+    beforeEach(() => {
       dispatcher.start();
     });
-    it('should call port.start()', function() {
+
+    it('should call port.start()', () => {
       expect(port.start).to.be.calledOnce;
     });
   });
-  describe('close()', function() {
-    beforeEach(function() {
+
+  describe('close()', () => {
+    beforeEach(() => {
       dispatcher.close();
     });
-    it('should call port.close()', function() {
+
+    it('should call port.close()', () => {
       expect(port.close).to.be.calledOnce;
     });
   });

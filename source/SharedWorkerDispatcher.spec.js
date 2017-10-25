@@ -10,7 +10,7 @@ describe('SharedWorkerEventDispatcher', function() {
       dispatcher = new SharedWorkerEventDispatcher(worker);
     });
     it('should extend WorkerEventDispatcher', function() {
-      expect(dispatcher).to.be.an.instanceof(WorkerEventDispatcher);
+      expect(dispatcher).to.be.an.instanceof(AbstractDispatcher);
     });
     it('should have WorkerMessenger interface', function() {
       expect(dispatcher.addEventListener).to.be.a('function');

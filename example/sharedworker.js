@@ -29,8 +29,8 @@ function getHistory() {
   return _history.slice().reverse();
 }
 
-var dispatcher = WorkerEventDispatcher.self();
-dispatcher.addEventListener(WorkerEventDispatcher.CONNECT_EVENT, function(event) {
+var dispatcher = AbstractDispatcher.self();
+dispatcher.addEventListener(AbstractDispatcher.CONNECT_EVENT, function(event) {
   var client = event.client;
   _clients.push(client);
 

@@ -60,7 +60,7 @@ describe('WorkerEvent', function() {
           return true;
         })
       };
-      handler = WorkerEvent.createHandler(Event.ERROR, target, dispatcher);
+      handler = WorkerEvent.redispatchWorkerEvent(Event.ERROR, target, dispatcher);
       event = {type: 'error'};
       handler(event);
     });
