@@ -30,11 +30,11 @@ class SharedWorkerDispatcher extends AbstractDispatcher {
   }
 
   start() {
-    this.worker.start();
+    this.target.start();
   }
 
   close() {
-    this.worker.close();
+    this.target.close();
   }
 }
 

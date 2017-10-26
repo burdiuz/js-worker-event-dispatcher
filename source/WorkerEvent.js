@@ -1,3 +1,5 @@
+import { Event } from 'event-dispatcher';
+
 export const NativeEventTypes = {
   CONNECT: 'connect',
   MESSAGE: 'message',

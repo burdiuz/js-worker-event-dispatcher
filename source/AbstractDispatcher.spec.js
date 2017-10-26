@@ -25,7 +25,7 @@ describe('AbstractDispatcher', () => {
     expect(port.postMessage).to.be.calledWith(sinon.match.object, sinon.match.array);
   });
 
-  it('should have MessagePortDispatcher interface', () => {
+  it('should have Dispatcher interface', () => {
     expect(dispatcher.addEventListener).to.be.a('function');
     expect(dispatcher.hasEventListener).to.be.a('function');
     expect(dispatcher.removeEventListener).to.be.a('function');

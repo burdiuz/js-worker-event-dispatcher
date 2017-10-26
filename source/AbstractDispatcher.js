@@ -15,8 +15,15 @@ class AbstractDispatcher extends MessagePortDispatcher {
     this.type = type;
   }
 
-  initialize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor) {
-    const postMessageHandler = (data, transferList) => target.postMessage(data, transferList);
+  initialize(
+    target,
+    customPostMessageHandler = null,
+    receiverEventPreprocessor = null,
+    senderEventPreprocessor = null,
+  ) {
+    const postMessageHandler = (data, targetOrigin, transferList) =>
+      target.postMessage(data, transferList);
+
     super.initialize(
       target,
       customPostMessageHandler || postMessageHandler,

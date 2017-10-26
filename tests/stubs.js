@@ -34,5 +34,3 @@ export const apply = () => {
   window.Worker = Worker;
   window.SharedWorker = SharedWorker;
 };
-
-export dafault apply;

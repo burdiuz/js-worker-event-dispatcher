@@ -2,61 +2,64 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
+import WorkerEvent, { NativeEventTypes } from '../WorkerEvent';
 import ServerDispatcher from './ServerDispatcher';
-import apply, {
-  Worker,
-  SharedWorker,
+import ClientDispatcher from './ClientDispatcher';
+import {
   EventTarget,
-  MessagePort,
-  MessagePortBase
+  MessagePortBase,
 } from '../../tests/stubs';
 
-describe('ServerDispatcher', function() {
+describe('ServerDispatcher', () => {
   let worker;
   let dispatcher;
 
-  beforeEach(function() {
+  beforeEach(() => {
     worker = new MessagePortBase();
-    dispatcher = new ServerEventDispatcher(worker);
+    dispatcher = new ServerDispatcher(worker);
   });
 
-  it('should extend EventDispatcher', function() {
-    expect(dispatcher).to.be.an.instanceof(EventDispatcher);
+  it('should add listeners to events', () => {
+    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.ERROR);
+    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.LANGUAGECHANGE);
+    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.ONLINE);
+    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.OFFLINE);
   });
-  it('should add listeners to events', function() {
-    expect(worker.addEventListener).to.be.calledWith(Event.ERROR);
-    expect(worker.addEventListener).to.be.calledWith(Event.LANGUAGECHANGE);
-    expect(worker.addEventListener).to.be.calledWith(Event.ONLINE);
-    expect(worker.addEventListener).to.be.calledWith(Event.OFFLINE);
-  });
-  describe('on connect', function() {
-    var port = null;
-    var connectHandler = null;
-    beforeEach(function() {
+
+  describe('on connect', () => {
+    let port;
+    let connectHandler;
+
+    beforeEach(() => {
       port = new MessagePortBase();
       connectHandler = sinon.spy();
+
       dispatcher.addEventListener(WorkerEvent.CONNECT, connectHandler);
-      var handler = worker.addEventListener.getCall(0).args[1];
+
+      const handler = worker.addEventListener.getCall(0).args[1];
       handler({
         type: 'connect',
-        ports: [port]
+        ports: [port],
       });
     });
-    it('should dispatch CONNECT event', function() {
+
+    it('should dispatch CONNECT event', () => {
       expect(connectHandler).to.be.calledOnce;
     });
-    it('event should have client dispatcher', function() {
-      var event = connectHandler.getCall(0).args[0];
-      expect(event.client).to.be.an.instanceof(ClientEventDispatcher);
+
+    it('event should have client dispatcher', () => {
+      const event = connectHandler.getCall(0).args[0];
+      expect(event.client).to.be.an.instanceof(ClientDispatcher);
     });
   });
-  describe('When creating without args', function() {
-    var dispatcher = null;
-    beforeEach(function() {
+
+  describe('When creating without args', () => {
+    beforeEach(() => {
       window.self = new EventTarget();
-      dispatcher = new ServerEventDispatcher();
+      dispatcher = new ServerDispatcher();
     });
-    it('should use `self` thinking its SharedWorkerGlobalScope', function() {
+
+    it('should use `self` thinking its SharedWorkerGlobalScope', () => {
       expect(dispatcher.target).to.be.equal(window.self);
     });
   });

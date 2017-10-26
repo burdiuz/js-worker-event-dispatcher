@@ -108,6 +108,9 @@ exports.default = WorkerType;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.dispatchWorkerErrorEvent = exports.dispatchWorkerEvents = exports.dispatchWorkerEvent = exports.getWorkerEventType = exports.NativeEventTypes = undefined;
+
+var _eventDispatcher = __webpack_require__(2);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -138,7 +141,7 @@ var WorkerEvent = function (_Event) {
   }
 
   return WorkerEvent;
-}(Event);
+}(_eventDispatcher.Event);
 
 WorkerEvent.CONNECT = 'worker:connect';
 WorkerEvent.MESSAGE = 'worker:message';
@@ -160,6 +163,8 @@ var getWorkerEventType = exports.getWorkerEventType = function getWorkerEventTyp
       return WorkerEvent.ONLINE;
     case NativeEventTypes.OFFLINE:
       return WorkerEvent.OFFLINE;
+    default:
+      return null;
   }
 };
 
@@ -693,10 +698,15 @@ var AbstractDispatcher = function (_MessagePortDispatche) {
 
   _createClass(AbstractDispatcher, [{
     key: 'initialize',
-    value: function initialize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor) {
-      var postMessageHandler = function postMessageHandler(data, transferList) {
+    value: function initialize(target) {
+      var customPostMessageHandler = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+      var receiverEventPreprocessor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var senderEventPreprocessor = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+      var postMessageHandler = function postMessageHandler(data, targetOrigin, transferList) {
         return target.postMessage(data, transferList);
       };
+
       _get(AbstractDispatcher.prototype.__proto__ || Object.getPrototypeOf(AbstractDispatcher.prototype), 'initialize', this).call(this, target, customPostMessageHandler || postMessageHandler, receiverEventPreprocessor, senderEventPreprocessor);
     }
   }]);
@@ -807,6 +817,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var getTarget = function getTarget(worker) {
+  // eslint-disable-next-line no-restricted-globals
   var target = worker || self;
 
   if (!_eventDispatcher2.default.isObject(target)) {
@@ -923,12 +934,12 @@ var SharedWorkerDispatcher = function (_AbstractDispatcher) {
   _createClass(SharedWorkerDispatcher, [{
     key: 'start',
     value: function start() {
-      this.worker.start();
+      this.target.start();
     }
   }, {
     key: 'close',
     value: function close() {
-      this.worker.close();
+      this.target.close();
     }
   }]);
 
@@ -983,14 +994,15 @@ var ServerDispatcher = function ServerDispatcher(target, receiverEventPreprocess
 
   _initialiseProps.call(this);
 
+  // eslint-disable-next-line no-restricted-globals
   this.target = target || self;
   this.clientReceiverEventPreprocessor = clientReceiverEventPreprocessor;
   this.clientSenderEventPreprocessor = clientSenderEventPreprocessor;
   this.type = _WorkerType2.default.SHARED_WORKER_SERVER;
   this.receiver = new _eventDispatcher2.default(receiverEventPreprocessor);
 
-  target.addEventListener('connect', this.handleConnect);
-  (0, _WorkerEvent.dispatchWorkerEvents)(target, this.receiver);
+  this.target.addEventListener('connect', this.handleConnect);
+  (0, _WorkerEvent.dispatchWorkerEvents)(this.target, this.receiver);
 };
 
 var _initialiseProps = function _initialiseProps() {
@@ -1075,7 +1087,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var CONNECT_EVENT = _WorkerEvent2.default.CONNECT;
 var DEDICATED_WORKER = _WorkerType2.default.DEDICATED_WORKER;
 var SHARED_WORKER = _WorkerType2.default.SHARED_WORKER;
-
 exports.default = _DedicatedWorkerDispatcher2.default;
 exports.create = _create.create;
 exports.createForSelf = _create.createForSelf;
@@ -1287,7 +1298,7 @@ var MessagePortDispatcher = exports.MessagePortDispatcher = function (_EventDisp
     var _this = _possibleConstructorReturn(this, (MessagePortDispatcher.__proto__ || Object.getPrototypeOf(MessagePortDispatcher)).call(this, null, true));
 
     if (!noInit) {
-      _this.initiallize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor);
+      _this.initialize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor);
     }
     return _this;
   }
@@ -1298,8 +1309,8 @@ var MessagePortDispatcher = exports.MessagePortDispatcher = function (_EventDisp
 
 
   _createClass(MessagePortDispatcher, [{
-    key: 'initiallize',
-    value: function initiallize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor) {
+    key: 'initialize',
+    value: function initialize(target, customPostMessageHandler, receiverEventPreprocessor, senderEventPreprocessor) {
       this.target = target || self;
       this._handlers = {
         customPostMessageHandler: customPostMessageHandler,
@@ -2017,6 +2028,7 @@ var create = exports.create = function create(target, type, receiverEventPreproc
  * @returns {AbstractDispatcher}
  */
 var createForSelf = exports.createForSelf = function createForSelf(receiverEventPreprocessor, senderEventPreprocessor) {
+  /* eslint-disable no-restricted-globals */
   var dispatcher = null;
   if (typeof self.postMessage === 'function') {
     dispatcher = new _DedicatedWorkerDispatcher2.default(self, receiverEventPreprocessor, senderEventPreprocessor);
@@ -2024,6 +2036,7 @@ var createForSelf = exports.createForSelf = function createForSelf(receiverEvent
     dispatcher = new _ServerDispatcher2.default(self, receiverEventPreprocessor);
   }
   return dispatcher;
+  /* eslint-enable no-restricted-globals */
 };
 
 /***/ })

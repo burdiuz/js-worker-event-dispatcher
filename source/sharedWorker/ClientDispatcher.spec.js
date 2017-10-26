@@ -2,14 +2,9 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
+import { NativeEventTypes } from '../WorkerEvent';
 import ClientDispatcher from './ClientDispatcher';
-import apply, {
-  Worker,
-  SharedWorker,
-  EventTarget,
-  MessagePort,
-  MessagePortBase
-} from '../../tests/stubs';
+import { MessagePort } from '../../tests/stubs';
 
 describe('ClientDispatcher', () => {
   let port;
@@ -20,7 +15,7 @@ describe('ClientDispatcher', () => {
     dispatcher = new ClientDispatcher(port);
   });
 
-  it('should have WorkerMessenger interface', () => {
+  it('should have Dispatcher interface', () => {
     expect(dispatcher.addEventListener).to.be.a('function');
     expect(dispatcher.hasEventListener).to.be.a('function');
     expect(dispatcher.removeEventListener).to.be.a('function');
@@ -29,11 +24,11 @@ describe('ClientDispatcher', () => {
   });
 
   it('should call port.addEventListener()', () => {
-    expect(port.addEventListener).to.be.calledWith(Event.MESSAGE);
+    expect(port.addEventListener).to.be.calledWith(NativeEventTypes.MESSAGE);
   });
 
   it('should call port.postMessage()', () => {
-    dispatcher.dispatchEvent({type: 'meMyself', data: 'Irene'});
+    dispatcher.dispatchEvent({ type: 'meMyself', data: 'Irene' });
     expect(port.postMessage).to.be.calledOnce;
   });
 

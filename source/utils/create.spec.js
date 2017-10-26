@@ -13,7 +13,7 @@ import {
   SharedWorker,
   EventTarget,
   MessagePort,
-  MessagePortBase
+  MessagePortBase,
 } from '../../tests/stubs';
 
 describe('utils/create', () => {
@@ -53,7 +53,7 @@ describe('utils/create', () => {
       });
 
       it('should create SharedWorker Server', () => {
-        expect(dispatcher).to.be.an.instanceof(ServerEventDispatcher);
+        expect(dispatcher).to.be.an.instanceof(ServerDispatcher);
       });
     });
 

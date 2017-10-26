@@ -25,8 +25,8 @@ class ServerDispatcher {
     this.type = WorkerType.SHARED_WORKER_SERVER;
     this.receiver = new EventDispatcher(receiverEventPreprocessor);
 
-    target.addEventListener('connect', this.handleConnect);
-    dispatchWorkerEvents(target, this.receiver);
+    this.target.addEventListener('connect', this.handleConnect);
+    dispatchWorkerEvents(this.target, this.receiver);
   }
 
   addEventListener = (...args) => this.receiver.addEventListener(...args);

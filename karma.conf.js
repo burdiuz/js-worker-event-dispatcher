@@ -7,7 +7,7 @@ module.exports = (config) => {
     frameworks: ['mocha', 'sinon-chai'],
     files: [
       'source/**/*.spec.js',
-      'tests/**/*.spec.js',
+      'tests/*.js',
     ],
     exclude: [],
 
@@ -32,7 +32,7 @@ module.exports = (config) => {
           },
           {
             test: /\.js$/,
-            exclude: /\.spec\.js$/,
+            exclude: /(\.spec|stubs)\.js$/,
             use: getBabelLoader(['babel-plugin-istanbul']),
           },
         ],

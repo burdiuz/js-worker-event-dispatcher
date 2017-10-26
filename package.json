@@ -62,6 +62,7 @@
     "lint:spec": "./node_modules/.bin/eslint -c eslintrc.spec.json \"source/**/*.spec.js\"",
     "flow": "./node_modules/.bin/flow",
     "server": "./node_modules/.bin/webpack-dev-server --port 8081 --config webpack.config.main.js --open",
-    "test": "./node_modules/.bin/karma start --single-run --browsers Firefox karma.conf.js"
+    "test": "./node_modules/.bin/karma start --single-run --browsers Firefox karma.conf.js",
+    "test:watch": "./node_modules/.bin/karma start --auto-watch --browsers Firefox karma.conf.js"
   }
 }
