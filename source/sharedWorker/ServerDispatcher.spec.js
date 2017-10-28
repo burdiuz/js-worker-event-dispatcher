@@ -26,6 +26,65 @@ describe('ServerDispatcher', () => {
     expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.OFFLINE);
   });
 
+  describe('When "addEventListener" called', () => {
+    let stub;
+    let handler;
+
+    beforeEach(() => {
+      stub = sinon.stub(dispatcher.receiver, 'addEventListener');
+      handler = () => null;
+      dispatcher.addEventListener('my-event', handler);
+    });
+
+    it('should pass call to receiver event dispatcher', () => {
+      expect(stub).to.be.calledOnce;
+      expect(stub).to.be.calledWith('my-event', handler);
+    });
+  });
+
+  describe('When "hasEventListener" called', () => {
+    let stub;
+
+    beforeEach(() => {
+      stub = sinon.stub(dispatcher.receiver, 'hasEventListener');
+      dispatcher.hasEventListener('my-event');
+    });
+
+    it('should pass call to receiver event dispatcher', () => {
+      expect(stub).to.be.calledOnce;
+      expect(stub).to.be.calledWith('my-event');
+    });
+  });
+
+  describe('When "removeEventListener" called', () => {
+    let stub;
+    let handler;
+
+    beforeEach(() => {
+      stub = sinon.stub(dispatcher.receiver, 'removeEventListener');
+      handler = () => null;
+      dispatcher.removeEventListener('my-event', handler);
+    });
+
+    it('should pass call to receiver event dispatcher', () => {
+      expect(stub).to.be.calledOnce;
+      expect(stub).to.be.calledWith('my-event', handler);
+    });
+  });
+
+  describe('When "removeAllEventListeners" called', () => {
+    let stub;
+
+    beforeEach(() => {
+      stub = sinon.stub(dispatcher.receiver, 'removeAllEventListeners');
+      dispatcher.removeAllEventListeners();
+    });
+
+    it('should pass call to receiver event dispatcher', () => {
+      expect(stub).to.be.calledOnce;
+    });
+  });
+
   describe('on connect', () => {
     let port;
     let connectHandler;

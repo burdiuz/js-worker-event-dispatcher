@@ -63,6 +63,10 @@ describe('getWorkerEventType()', () => {
     expect(getWorkerEventType(NativeEventTypes.OFFLINE))
       .to.be.equal(WorkerEvent.OFFLINE);
   });
+  it('should result with NULL for unknown event type', () => {
+    expect(getWorkerEventType('unknown-event'))
+      .to.be.null;
+  });
 });
 
 describe('dispatchWorkerEvent()', () => {
