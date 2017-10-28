@@ -1,3 +1,5 @@
+import EventDispatcher from 'event-dispatcher';
+import MessagePortDispatcher from 'messageport-dispatcher';
 import WorkerType from './WorkerType';
 import WorkerEvent from './WorkerEvent';
 import DedicatedWorkerDispatcher from './DedicatedWorkerDispatcher';
@@ -22,4 +24,6 @@ module.exports = Object.assign(DedicatedWorkerDispatcher, {
   ServerDispatcher,
   SharedWorkerDispatcher,
   DedicatedWorkerDispatcher,
+  EventDispatcher,
+  MessagePortDispatcher,
 });

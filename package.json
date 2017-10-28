@@ -1,8 +1,8 @@
 {
-  "name": "worker-event-dispatcher",
-  "description": "WorkerEventDispatcher is a JavaScript class that adds events layer to Worker API",
-  "version": "1.0.6",
-  "main": "dist/worker-event-dispatcher.min.js",
+  "name": "worker-dispatcher",
+  "description": "WorkerDispatcher is a JavaScript class that adds events layer to Worker API",
+  "version": "1.1.7",
+  "main": "dist/worker-dispatcher.min.js",
   "keywords": [
     "events",
     "webworker",

@@ -2,11 +2,13 @@
  * Created by Oleg Galaburda on 10.02.16.
  */
 importScripts(
-  '../dist/worker-event-dispatcher.standalone.js'
+  '../dist/worker-dispatcher.direct.js',
 );
-var api = AbstractDispatcher.self();
-api.addEventListener('time:request', function() {
-  setTimeout(function() {
+
+const api = WorkerDispatcher.createForSelf();
+
+api.addEventListener('time:request', () => {
+  setTimeout(() => {
     api.dispatchEvent('time:response', Date.now());
   }, 200);
 });

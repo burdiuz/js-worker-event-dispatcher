@@ -1,7 +1,7 @@
 const path = require('path');
 
-const LIBRARY_FILE_NAME = 'worker-event-dispatcher';
-const LIBRARY_VAR_NAME = 'WorkerEventDispatcher';
+const LIBRARY_FILE_NAME = 'worker-dispatcher';
+const LIBRARY_VAR_NAME = 'WorkerDispatcher';
 
 const p = (value) => {
   return path.resolve(__dirname, value);

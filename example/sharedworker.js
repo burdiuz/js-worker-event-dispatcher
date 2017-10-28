@@ -2,42 +2,39 @@
  * Created by Oleg Galaburda on 11.02.16.
  */
 importScripts(
-  '../dist/worker-event-dispatcher.standalone.js'
+  '../dist/worker-dispatcher.direct.js',
 );
 
-var _clients = [];
+const clients = [];
+const HISTORY_MAX_LENGTH = 10;
+const dispatcher = WorkerDispatcher.createForSelf();
+let history = [];
 
-var getName = (function() {
-  var baseName = 'Client #';
-  var index = 0;
-  return function() {
-    return baseName + String(++index);
-  };
+const getName = (() => {
+  const baseName = 'Client #';
+  let index = 0;
+  return () => `${baseName}${++index}`;
 })();
 
-var _history = [];
-var HISTORY_MAX_LENGTH = 10;
-
 function addToHistory(message) {
-  _history.unshift(message);
-  if (_history.length > HISTORY_MAX_LENGTH) {
-    _history = _history.slice(0, HISTORY_MAX_LENGTH);
+  history.unshift(message);
+  if (history.length > HISTORY_MAX_LENGTH) {
+    history = history.slice(0, HISTORY_MAX_LENGTH);
   }
 }
 
 function getHistory() {
-  return _history.slice().reverse();
+  return history.reverse();
 }
 
-var dispatcher = AbstractDispatcher.self();
-dispatcher.addEventListener(AbstractDispatcher.CONNECT_EVENT, function(event) {
-  var client = event.client;
-  _clients.push(client);
+dispatcher.addEventListener(WorkerDispatcher.CONNECT_EVENT, (event) => {
+  const client = event.client;
+  clients.push(client);
 
-  client.addEventListener('sendData', function(event) {
+  client.addEventListener('sendData', (event) => {
     addToHistory(event.data);
 
-    _clients.forEach(function(client, index, list) {
+    clients.forEach((client) => {
       client.dispatchEvent('dataReceived', event.data);
     });
   });

@@ -4,9 +4,9 @@
 	else if(typeof define === 'function' && define.amd)
 		define([], factory);
 	else if(typeof exports === 'object')
-		exports["WorkerEventDispatcher"] = factory();
+		exports["WorkerDispatcher"] = factory();
 	else
-		root["WorkerEventDispatcher"] = factory();
+		root["WorkerDispatcher"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -2042,4 +2042,4 @@ var createForSelf = exports.createForSelf = function createForSelf(receiverEvent
 /***/ })
 /******/ ]);
 });
-//# sourceMappingURL=worker-event-dispatcher.js.map
+//# sourceMappingURL=worker-dispatcher.js.map
