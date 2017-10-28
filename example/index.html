@@ -15,45 +15,50 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
           integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
           crossorigin="anonymous"></script>
-  <script type="text/javascript" src="../bower_components/event-dispatcher/dist/event-dispatcher.js"></script>
-  <script type="text/javascript" src="../dist/worker-event-dispatcher.standalone.js"></script>
+  <script type="text/javascript" src="../dist/worker-dispatcher.direct.js"></script>
   <script type="text/javascript">
+
+    class Controller extends WorkerDispatcher.EventDispatcher {
+      constructor(workerDispatcher){
+        super();
+        this.workerDispatcher = workerDispatcher;
+      }
+
+      start() {
+        if (this.intervalId) {
+          this.stop();
+        }
+        this.intervalId = setInterval(() => this.workerDispatcher.dispatchEvent('time:request'), 250);
+      }
+
+      stop() {
+        clearInterval(this.intervalId);
+        this.intervalId = 0;
+        $('.time').val('');
+      }
+    }
+
     // DedicatedWorker UI
-    (function() {
+    (() => {
       // Are equivalents:
       //var workerApi = new WorkerEventDispatcher('webworker.js');
-      var workerApi = new WorkerEventDispatcher(new Worker('webworker.js'));
+      const workerApi = new WorkerDispatcher(new Worker('webworker.js'));
       //var workerApi = new WorkerEventDispatcher.create('webworker.js', WorkerEventDispatcher.WorkerType.DEDICATED_WORKER);
       // Event type string may be of any format, WorkerEventDispatcher does not depend on it.
       // I've used "namespace:local" string
-      workerApi.addEventListener('time:response', function(event) {
+      workerApi.addEventListener('time:response', (event) => {
         if (controller.intervalId) {
           $('.time').val(event.data);
         }
       });
 
-      var controller = {
-        start: function() {
-          if (this.intervalId) {
-            this.stop();
-          }
-          this.intervalId = setInterval(function() {
-            workerApi.dispatchEvent('time:request');
-          }, 250);
-        },
-        stop: function() {
-          clearInterval(this.intervalId);
-          this.intervalId = 0;
-          $('.time').val('');
-        }
-      };
-      EventDispatcher.apply(controller);
+      const controller = new Controller(workerApi);
 
-      $(document).ready(function() {
-        $('.start').on('click', function(event) {
+      $(document).ready(() => {
+        $('.start').on('click', () => {
           controller.start();
         });
-        $('.stop').on('click', function(event) {
+        $('.stop').on('click', () => {
           controller.stop();
         });
       });
@@ -61,11 +66,9 @@
   </script>
   <script type="text/javascript">
     // SharedWorker UI
-    (function() {
-      $(document).ready(function() {
-        $('.create-shared').on('click', function(event) {
-          window.open('sharedworker_ui.html', '_blank');
-        });
+    (() => {
+      $(document).ready(() => {
+        $('.create-shared').on('click', () => window.open('sharedworker_ui.html', '_blank'));
       });
     })();
   </script>

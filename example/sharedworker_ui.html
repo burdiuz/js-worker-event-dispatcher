@@ -10,42 +10,47 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
           integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
           crossorigin="anonymous"></script>
-  <script type="text/javascript" src="../dist/worker-event-dispatcher.standalone.js"></script>
+  <script type="text/javascript" src="../dist/worker-dispatcher.direct.js"></script>
   <script type="text/javascript">
     // SharedWorker UI
-    (function() {
-      var worker = new SharedWorker('sharedworker.js');
-      var dispatcher = WorkerEventDispatcher.create(worker, WorkerEventDispatcher.SHARED_WORKER);
+    (() => {
+      const worker = new SharedWorker('sharedworker.js');
+      const dispatcher = WorkerDispatcher.create(worker, WorkerDispatcher.SHARED_WORKER);
 
-      dispatcher.addEventListener('handshake', function(event) {
+      const addMessage = (name, text) => {
+        $('#messages').prepend(`
+<div class="row">
+  <div class="col-xs-12">
+    <strong>${name}</strong>: ${text.replace('<', '&lt;')}
+  </div>
+</div>`);
+      };
+
+      dispatcher.addEventListener('handshake', (event) => {
         name = event.data.name;
         $('#frameName').html(name);
         console.log(event.data);
         if (event.data.history) {
-          event.data.history.forEach(function(message) {
+          event.data.history.forEach((message) => {
             addMessage(message.name, message.text);
           });
         }
       });
 
-      dispatcher.addEventListener('dataReceived', function(event) {
+      dispatcher.addEventListener('dataReceived', (event) => {
         addMessage(event.data.name, event.data.text);
       });
 
-      function addMessage(name, text) {
-        $('#messages').prepend('<div class="row"><div class="col-xs-12"><strong>' + name + '</strong>: ' + text.replace('<', '&lt;') + '</div></div>');
-      }
-
-      $(document).ready(function() {
-        function messageHandler(event) {
+      $(document).ready(() => {
+        const messageHandler = () => {
           dispatcher.dispatchEvent('sendData', {
             name: name,
             text: $('#message').val()
           });
           $('#message').val('');
-        }
+        };
 
-        $('#message').keyup(function(event) {
+        $('#message').keyup((event) => {
           if (event.keyCode == 13) {
             messageHandler();
           }
@@ -74,7 +79,7 @@
       <input type="text" class="form-control" id="message">
     </div>
     <div class="col-xs-2 form-group">
-      <input type="button" value="Send" class="btn btn-primary"></input>
+      <input type="button" value="Send" class="btn btn-primary">
     </div>
   </div>
   <div id="messages">
