@@ -1,5 +1,5 @@
-import EventDispatcher from 'event-dispatcher';
-import MessagePortDispatcher from 'messageport-dispatcher';
+import EventDispatcher from '@actualwave/event-dispatcher';
+import MessagePortDispatcher from '@actualwave/messageport-dispatcher';
 import WorkerType from './WorkerType';
 import WorkerEvent from './WorkerEvent';
 import DedicatedWorkerDispatcher from './DedicatedWorkerDispatcher';

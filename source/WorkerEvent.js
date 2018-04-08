@@ -1,4 +1,4 @@
-import { Event } from 'event-dispatcher';
+import { Event } from '@actualwave/event-dispatcher';
 
 export const NativeEventTypes = {
   CONNECT: 'connect',

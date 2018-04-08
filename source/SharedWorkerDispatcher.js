@@ -1,4 +1,4 @@
-import EventDispatcher from 'event-dispatcher';
+import EventDispatcher from '@actualwave/event-dispatcher';
 import WorkerType from './WorkerType';
 import { dispatchWorkerErrorEvent } from './WorkerEvent';
 import AbstractDispatcher from './AbstractDispatcher';

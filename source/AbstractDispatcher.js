@@ -1,4 +1,4 @@
-import MessagePortDispatcher from 'messageport-dispatcher';
+import MessagePortDispatcher from '@actualwave/messageport-dispatcher';
 
 /**
  *

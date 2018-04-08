@@ -1,7 +1,7 @@
 {
-  "name": "worker-dispatcher",
+  "name": "@actualwave/worker-dispatcher",
   "description": "WorkerDispatcher is a JavaScript class that adds events layer to Worker API",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "main": "dist/worker-dispatcher.min.js",
   "keywords": [
     "events",
@@ -24,8 +24,8 @@
     "url": "https://github.com/burdiuz/js-worker-event-dispatcher.git"
   },
   "dependencies": {
-    "event-dispatcher": "git://github.com/burdiuz/js-event-dispatcher.git",
-    "messageport-dispatcher": "git://github.com/burdiuz/js-messageport-event-dispatcher.git"
+    "@actualwave/event-dispatcher": "^1.1.13",
+    "@actualwave/messageport-dispatcher": "^1.0.9"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
