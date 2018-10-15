@@ -6,7 +6,7 @@ import WorkerEvent, {
   NativeEventTypes,
   getWorkerEventType,
   dispatchWorkerEvent,
-} from './WorkerEvent';
+} from '../WorkerEvent';
 
 describe('WorkerEvent', () => {
   let event;

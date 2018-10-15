@@ -2,13 +2,13 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import { NativeEventTypes } from './WorkerEvent';
-import DedicatedWorkerDispatcher from './DedicatedWorkerDispatcher';
+import { NativeEventTypes } from '../WorkerEvent';
+import DedicatedWorkerDispatcher from '../DedicatedWorkerDispatcher';
 import {
   apply,
   Worker,
   MessagePort,
-} from '../tests/stubs';
+} from '../../tests/stubs';
 
 describe('DedicatedWorkerDispatcher', () => {
   let worker;

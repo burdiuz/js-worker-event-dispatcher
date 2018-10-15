@@ -2,7 +2,7 @@
  * Created by Oleg Galaburda on 10.02.16.
  */
 importScripts(
-  '../dist/worker-dispatcher.direct.js',
+  'worker-dispatcher.js',
 );
 
 const api = WorkerDispatcher.createForSelf();

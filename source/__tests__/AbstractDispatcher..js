@@ -1,8 +1,8 @@
 /**
  * Created by Oleg Galaburda on 15.02.16.
  */
-import AbstractDispatcher from './AbstractDispatcher';
-import { MessagePortBase } from '../tests/stubs';
+import AbstractDispatcher from '../AbstractDispatcher';
+import { MessagePortBase } from '../../tests/stubs';
 
 describe('AbstractDispatcher', () => {
   const type = 'my-type';

@@ -1,10 +1,10 @@
-import EventDispatcher from '@actualwave/event-dispatcher';
+import { isObject } from '@actualwave/event-dispatcher';
 import WorkerType from './WorkerType';
 import { dispatchWorkerErrorEvent } from './WorkerEvent';
 import AbstractDispatcher from './AbstractDispatcher';
 
 const getTarget = (target, name) => {
-  if (!EventDispatcher.isObject(target)) {
+  if (!isObject(target)) {
     return new SharedWorker(String(target), name);
   }
 
@@ -22,10 +22,12 @@ const getTarget = (target, name) => {
  */
 class SharedWorkerDispatcher extends AbstractDispatcher {
   constructor(target, name, receiverEventPreprocessor, senderEventPreprocessor) {
-    super(WorkerType.SHARED_WORKER);
-    this.worker = getTarget(target, name);
+    const worker = getTarget(target, name);
 
-    this.initialize(this.worker.port, null, receiverEventPreprocessor, senderEventPreprocessor);
+    super(WorkerType.SHARED_WORKER, worker.port, receiverEventPreprocessor, senderEventPreprocessor);
+
+    this.worker = worker;
+
     dispatchWorkerErrorEvent(this.worker, this.receiver);
   }
 

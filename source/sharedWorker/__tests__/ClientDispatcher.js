@@ -2,9 +2,9 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import { NativeEventTypes } from '../WorkerEvent';
-import ClientDispatcher from './ClientDispatcher';
-import { MessagePort } from '../../tests/stubs';
+import { NativeEventTypes } from '../../WorkerEvent';
+import ClientDispatcher from '../ClientDispatcher';
+import { MessagePort } from '../../../tests/stubs';
 
 describe('ClientDispatcher', () => {
   let port;

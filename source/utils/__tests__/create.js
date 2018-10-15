@@ -2,19 +2,19 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import WorkerType from '../WorkerType';
-import DedicatedWorkerDispatcher from '../DedicatedWorkerDispatcher';
-import SharedWorkerDispatcher from '../SharedWorkerDispatcher';
-import ClientDispatcher from '../sharedWorker/ClientDispatcher';
-import ServerDispatcher from '../sharedWorker/ServerDispatcher';
-import { create, createForSelf } from './create';
+import WorkerType from '../../WorkerType';
+import DedicatedWorkerDispatcher from '../../DedicatedWorkerDispatcher';
+import SharedWorkerDispatcher from '../../SharedWorkerDispatcher';
+import ClientDispatcher from '../../sharedWorker/ClientDispatcher';
+import ServerDispatcher from '../../sharedWorker/ServerDispatcher';
+import { create, createForSelf } from '../create';
 import {
   Worker,
   SharedWorker,
   EventTarget,
   MessagePort,
   MessagePortBase,
-} from '../../tests/stubs';
+} from '../../../tests/stubs';
 
 describe('utils/create', () => {
   describe('create()', () => {

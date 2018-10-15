@@ -2,12 +2,12 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import { NativeEventTypes } from './WorkerEvent';
-import SharedWorkerDispatcher from './SharedWorkerDispatcher';
+import { NativeEventTypes } from '../WorkerEvent';
+import SharedWorkerDispatcher from '../SharedWorkerDispatcher';
 import {
   apply,
   SharedWorker,
-} from '../tests/stubs';
+} from '../../tests/stubs';
 
 describe('SharedWorkerDispatcher', () => {
   beforeEach(apply);
