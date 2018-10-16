@@ -5,7 +5,7 @@
 
 This is extension of [MessagePortDispatcher](https://github.com/burdiuz/js-messageport-event-dispatcher) to work with Dedicated and Shared Workers. It makes possible two-way communication with Workers using custom events. So, instead of using `postMessage()` and catching `message` event all the time, you are free to send any type of events to and from worker.
 
-[Demo with dedicated and shared workers](http://burdiuz.github.io/js-worker-event-dispatcher/index.html)
+[Demo with dedicated and shared workers](http://burdiuz.github.io/js-worker-event-dispatcher/)
 
 ## Installation
 Easy to install with [npm](https://www.npmjs.com/) package manager
