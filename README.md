@@ -3,47 +3,41 @@
 [![Build Status](https://travis-ci.org/burdiuz/js-worker-event-dispatcher.svg?branch=master)](https://travis-ci.org/burdiuz/js-worker-event-dispatcher)
 [![Coverage Status](https://coveralls.io/repos/github/burdiuz/js-worker-event-dispatcher/badge.svg?branch=master)](https://coveralls.io/github/burdiuz/js-worker-event-dispatcher?branch=master)
 
-> Note: This project was renamed from WorkerEventDispatcher and its API was slightly updated, so this readme may be not relevant until(i hope, short coming) review.
-  
 This is extension of [MessagePortDispatcher](https://github.com/burdiuz/js-messageport-event-dispatcher) to work with Dedicated and Shared Workers. It makes possible two-way communication with Workers using custom events. So, instead of using `postMessage()` and catching `message` event all the time, you are free to send any type of events to and from worker.
 
+[Demo with dedicated and shared workers](http://burdiuz.github.io/js-worker-event-dispatcher/index.html)
+
 ## Installation
-WorkerDispatcher is available via [bower](http://bower.io/)
-```
-bower install worker-event-dispatcher --save
-```
-If you want to use it with [npm](https://www.npmjs.com/) package manger, add it to `dependencies`section of your package.json file.
+Easy to install with [npm](https://www.npmjs.com/) package manager
 ```javascript
-"dependencies": {
-  "worker-event-dispatcher": "git://github.com/burdiuz/js-worker-event-dispatcher.git"
-}
+npm install --save @actualwave/worker-dispatcher
 ```
-Also WorkerDispatcher has standalone distribution file that includes all dependencies, so you can just [download single file](https://github.com/burdiuz/js-worker-event-dispatcher/blob/master/dist/worker-event-dispatcher.standalone.min.js) with everything needed to start using it.
+with [yarn](https://yarnpkg.com/) package manager
+```javascript
+yarn add @actualwave/worker-dispatcher
+```
 
 ## Usage
-WorkerDispatcher should be used on HTML page and in Worker script to properly handle communication.
+> Note: WorkerDispatcher distribution package contains `dist/` folder with package wrapped into [UMD](https://github.com/umdjs/umd) wrapper, so it can be used with any AMD module loader, nodejs `require()` or without any.
+
+**WorkerDispatcher should be used on HTML page and in Worker script to properly handle communication.**
 
 #### Dedicated Worker
-WorkerDispatcher for Dedicated Worker can be created via operator `new`
-```javascript
-var worker = new Worker('/workers/worker.js');
-var dispatcher = new WorkerDispatcher(worker);
-```
-or `WorkerDispatcher.create()` factory method
+WorkerDispatcher for Dedicated Worker can be created via `WorkerDispatcher.create()` factory function
 ```javascript
 var worker = new Worker('/workers/worker.js');
 var dispatcher = WorkerDispatcher.create(worker);
-/* or you can specify worker type */
+/* or you can explicitly specify worker type */
 var dispatcher = WorkerDispatcher.create(worker, WorkerDispatcher.DEDICATED_WORKER);
 ```
 Within Worker script it can be created via `WorkerDispatcher.createForSelf()`, don't need to pass anything, it grabs Worker's global scope object to communicate.
-```javascript 
+```javascript
 var dispatcher = WorkerDispatcher.createForSelf();
 ```
 WorkerDispatcher accepts Worker objects or string URL to JS file that should be launched in worker.
 Here Worker will be created from passed URL string:
 ```javascript
-var dispatcher = new WorkerDispatcher('/workers/worker.js');
+var dispatcher = WorkerDispatcher.create('/workers/worker.js');
 ```
 
 #### Shared Worker
@@ -68,8 +62,8 @@ dispatcher.addEventListener(WorkerDispatcher.WorkerEvent.CONNECT, function(event
 
 #### Sending and receiving messages
 To send messages use `dispatchEvent()` event and to receive messages add event listeners. Sent events will not be fired for sender dispatcher, so you cannot listen for event you just sent
-```javascript 
-var dispatcher = new WorkerDispatcher('/workers/worker.js');
+```javascript
+var dispatcher = WorkerDispatcher.create('/workers/worker.js');
 dispatcher.addEventListener('anyEvent', function(){
 	console.log('Event received');
 });
@@ -101,7 +95,7 @@ Project contains `example` folder with examples for Dedicated and Shared workers
 #### WorkerDispatcher shared instance members
 WorkerDispatcher is a base class and it shares functionality across all types of WorkerDispatcher's. When WorkerDispatcher instantiated directly, it actually creates DedicatedWorkerDispatcher.
 
- - **type**:String  - type of the worker  
+ - **type**:String  - type of the worker
 Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-messageport-event-dispatcher/blob/master/README.md#messageportdispatcher-instance-members), some most important:
  - **addEventListener**(eventType:String, listener:Function):void - add listener for incoming events. This method copied from `receiver`.
  - **hasEventListener**(eventType:String):Boolean - check if incoming event has listeners. This method copied from `receiver`.
@@ -117,11 +111,11 @@ Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-m
  - **create**(target:String|Worker|SharedWorker, type?:String, receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerDispatcher - Creates WorkerDispatcher instance based on type. Currently supported types are `WorkerDispatcher.DEDICATED_WORKER` and `WorkerDispatcher.SHARED_WORKER`. By default will create dispatcher for Dedicated Worker.
  - **self**(receiverEventPreprocessor?:Function, senderEventPreprocessor?:Function):WorkerDispatcher - Can be used in Worker script, it checks what kind of worker is used and returns proper dispatcher object for WorkerGlobalScope. For Dedicated Worker returns instance of DedicatedWorkerDispatcher and for Shared Worker -- ServerEventDispatcher.
 
- - WorkerEvent:Object - Worker event types 
+ - WorkerEvent:Object - Worker event types
    - CONNECT:String - Mirroring connect event fired from WorkerGlobalScope, fired when new client connected. Event object contains field `client` with `ClientEventDispatcher` instance, to communicate with client.
    - ERROR:String - Mirroring [error event](https://developer.mozilla.org/en-US/docs/Web/Events/error) fired from WorkerGlobalScope
    - LANGUAGECHANGE:String -  Mirroring [languagechange event](https://developer.mozilla.org/en-US/docs/Web/Events/languagechange) fired from WorkerGlobalScope
-   - ONLINE:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope 
+   - ONLINE:String - Mirroring [online event](https://developer.mozilla.org/en-US/docs/Web/Events/online) fired from WorkerGlobalScope
    - OFFLINE:String - Mirroring [offline event](https://developer.mozilla.org/en-US/docs/Web/Events/offline) fired from WorkerGlobalScope
  - WorkerType:Object - Possible dispatcher types, used with `WorkerDispatcher.create()`
    - DEDICATED_WORKER:String - Default type, will create DedicatedWorkerDispatcher
@@ -129,7 +123,7 @@ Including [all members of MessagePortDispatcher](https://github.com/burdiuz/js-m
    - SHARED_WORKER_SERVER:String - For internal usage, will create ServerEventDispatcher
    - SHARED_WORKER_CLIENT:String - For internal usage, will create ClientEventDispatcher
  - DedicatedWorker:Function - Constructor of DedicatedWorkerDispatcher
- - SharedWorker:Function - Constructor of SharedWorkerDispatcher 
+ - SharedWorker:Function - Constructor of SharedWorkerDispatcher
  - Server:Function - Constructor of ServerEventDispatcher
  - Client:Function - Constructor of ClientEventDispatcher
 
@@ -143,7 +137,7 @@ Created when `WorkerDispatcher.DEDICATED_WORKER` used, when `WorkerDispatcher.cr
 Created when WorkerDispatcher.SHARED_WORKER used. When created using `WorkerDispatcher.create()`, worker's name will default to `null`, if you need to specify name, you can instantiate it with constructor.
 ```javascript
 var dispatcher = new WorkerDispatcher.SharedWorkerDispatcher('/workers/sharedworker.js', 'worker-name');
-``` 
+```
 
 #### ServerEventDispatcher
 Created when WorkerDispatcher.createForSelf() called in Shared Worker. It differs from other types of WorkerDispatcher's because **does not have `dispatchEvent()` method**, so it can only listen for events, like WorkerEvent.CONNECT to accept connections. Since it cannot send data, it does not have `sender` EventDispatcher either, only `receiver` available.
@@ -167,7 +161,7 @@ dispatcher.addEventListener(WorkerDispatcher.WorkerEvent.CONNECT, function(event
   client.dispatchEvent('initialize');
 });
 ```
-  
+
 ### Links
 [MDN - Using web workers](https://developer.mozilla.org/ru/docs/DOM/Using_web_workers)
 [https://www.w3.org/TR/workers/](https://www.w3.org/TR/workers/)

@@ -11,33 +11,32 @@ describe('AbstractDispatcher', () => {
 
   beforeEach(() => {
     port = new MessagePortBase();
-    dispatcher = new AbstractDispatcher(type);
-    dispatcher.initialize(port);
+    dispatcher = new AbstractDispatcher(type, port);
   });
 
   it('should have a type', () => {
-    expect(type).to.be.equal(type);
+    expect(type).toBe(type);
   });
 
   it('should apply custom postMessage()', () => {
     dispatcher.dispatchEvent('anyEvent', null, []);
-    expect(port.postMessage).to.be.calledOnce;
-    expect(port.postMessage).to.be.calledWith(sinon.match.object, sinon.match.array);
+    expect(port.postMessage).toHaveBeenCalledTimes(1);
+    expect(port.postMessage).toHaveBeenCalledWith(expect.any(Object), expect.any(Array));
   });
 
   it('should have Dispatcher interface', () => {
-    expect(dispatcher.addEventListener).to.be.a('function');
-    expect(dispatcher.hasEventListener).to.be.a('function');
-    expect(dispatcher.removeEventListener).to.be.a('function');
-    expect(dispatcher.removeAllEventListeners).to.be.a('function');
-    expect(dispatcher.dispatchEvent).to.be.a('function');
+    expect(dispatcher.addEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.hasEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.removeEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.removeAllEventListeners).toBeInstanceOf(Function);
+    expect(dispatcher.dispatchEvent).toBeInstanceOf(Function);
   });
 
   it('should have target', () => {
-    expect(dispatcher.target).to.be.equal(port);
+    expect(dispatcher.target).toBe(port);
   });
 
   it('should have dispatcherId', () => {
-    expect(dispatcher.dispatcherId).to.be.ok;
+    expect(dispatcher.dispatcherId).toBeTruthy();
   });
 });

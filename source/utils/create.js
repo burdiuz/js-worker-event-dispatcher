@@ -13,39 +13,26 @@ import ServerDispatcher from '../sharedWorker/ServerDispatcher';
  * @returns {AbstractDispatcher}
  */
 export const create = (target, type, receiverEventPreprocessor, senderEventPreprocessor) => {
-  let dispatcher = null;
   switch (type) {
     default:
     case WorkerType.DEDICATED_WORKER:
-      dispatcher = new DedicatedWorkerDispatcher(
+      return new DedicatedWorkerDispatcher(
         target,
         receiverEventPreprocessor,
         senderEventPreprocessor,
       );
-      break;
     case WorkerType.SHARED_WORKER:
-      dispatcher = new SharedWorkerDispatcher(
+      return new SharedWorkerDispatcher(
         target,
         null,
         receiverEventPreprocessor,
         senderEventPreprocessor,
       );
-      break;
     case WorkerType.SHARED_WORKER_SERVER:
-      dispatcher = new ServerDispatcher(
-        target,
-        receiverEventPreprocessor,
-      );
-      break;
+      return new ServerDispatcher(target, receiverEventPreprocessor);
     case WorkerType.SHARED_WORKER_CLIENT:
-      dispatcher = new ClientDispatcher(
-        target,
-        receiverEventPreprocessor,
-        senderEventPreprocessor,
-      );
-      break;
+      return new ClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
   }
-  return dispatcher;
 };
 
 /**
@@ -56,19 +43,10 @@ export const create = (target, type, receiverEventPreprocessor, senderEventPrepr
  */
 export const createForSelf = (receiverEventPreprocessor, senderEventPreprocessor) => {
   /* eslint-disable no-restricted-globals */
-  let dispatcher = null;
-  if (typeof (self.postMessage) === 'function') {
-    dispatcher = new DedicatedWorkerDispatcher(
-      self,
-      receiverEventPreprocessor,
-      senderEventPreprocessor,
-    );
-  } else {
-    dispatcher = new ServerDispatcher(
-      self,
-      receiverEventPreprocessor,
-    );
+  if (typeof self.postMessage === 'function') {
+    return new DedicatedWorkerDispatcher(self, receiverEventPreprocessor, senderEventPreprocessor);
   }
-  return dispatcher;
+
+  return new ServerDispatcher(self, receiverEventPreprocessor);
   /* eslint-enable no-restricted-globals */
 };

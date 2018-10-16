@@ -13,7 +13,8 @@ export default {
       port: 8881,
       contentBase: ['dist', 'example'],
     }),
-    livereload({ watch: [DESTINATION_FOLDER, 'example'] }),
+    // livereload messes with worker JS code by adding document reference
+    // livereload({ watch: [DESTINATION_FOLDER, 'example'] }),
   ],
   watch: {
     include: 'source/**',

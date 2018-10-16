@@ -16,20 +16,23 @@ describe('ClientDispatcher', () => {
   });
 
   it('should have Dispatcher interface', () => {
-    expect(dispatcher.addEventListener).to.be.a('function');
-    expect(dispatcher.hasEventListener).to.be.a('function');
-    expect(dispatcher.removeEventListener).to.be.a('function');
-    expect(dispatcher.removeAllEventListeners).to.be.a('function');
-    expect(dispatcher.dispatchEvent).to.be.a('function');
+    expect(dispatcher.addEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.hasEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.removeEventListener).toBeInstanceOf(Function);
+    expect(dispatcher.removeAllEventListeners).toBeInstanceOf(Function);
+    expect(dispatcher.dispatchEvent).toBeInstanceOf(Function);
   });
 
   it('should call port.addEventListener()', () => {
-    expect(port.addEventListener).to.be.calledWith(NativeEventTypes.MESSAGE);
+    expect(port.addEventListener).toHaveBeenCalledWith(
+      NativeEventTypes.MESSAGE,
+      expect.any(Function),
+    );
   });
 
   it('should call port.postMessage()', () => {
     dispatcher.dispatchEvent({ type: 'meMyself', data: 'Irene' });
-    expect(port.postMessage).to.be.calledOnce;
+    expect(port.postMessage).toHaveBeenCalledTimes(1);
   });
 
   describe('start()', () => {
@@ -38,7 +41,7 @@ describe('ClientDispatcher', () => {
     });
 
     it('should call port.start()', () => {
-      expect(port.start).to.be.calledOnce;
+      expect(port.start).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -48,7 +51,7 @@ describe('ClientDispatcher', () => {
     });
 
     it('should call port.close()', () => {
-      expect(port.close).to.be.calledOnce;
+      expect(port.close).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -5,10 +5,7 @@
 import WorkerEvent, { NativeEventTypes } from '../../WorkerEvent';
 import ServerDispatcher from '../ServerDispatcher';
 import ClientDispatcher from '../ClientDispatcher';
-import {
-  EventTarget,
-  MessagePortBase,
-} from '../../../tests/stubs';
+import { EventTarget, MessagePortBase } from '../../../tests/stubs';
 
 describe('ServerDispatcher', () => {
   let worker;
@@ -20,10 +17,22 @@ describe('ServerDispatcher', () => {
   });
 
   it('should add listeners to events', () => {
-    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.ERROR);
-    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.LANGUAGECHANGE);
-    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.ONLINE);
-    expect(worker.addEventListener).to.be.calledWith(NativeEventTypes.OFFLINE);
+    expect(worker.addEventListener).toHaveBeenCalledWith(
+      NativeEventTypes.ERROR,
+      expect.any(Function),
+    );
+    expect(worker.addEventListener).toHaveBeenCalledWith(
+      NativeEventTypes.LANGUAGECHANGE,
+      expect.any(Function),
+    );
+    expect(worker.addEventListener).toHaveBeenCalledWith(
+      NativeEventTypes.ONLINE,
+      expect.any(Function),
+    );
+    expect(worker.addEventListener).toHaveBeenCalledWith(
+      NativeEventTypes.OFFLINE,
+      expect.any(Function),
+    );
   });
 
   describe('When "addEventListener" called', () => {
@@ -31,14 +40,14 @@ describe('ServerDispatcher', () => {
     let handler;
 
     beforeEach(() => {
-      stub = sinon.stub(dispatcher.receiver, 'addEventListener');
+      stub = jest.spyOn(dispatcher.receiver, 'addEventListener');
       handler = () => null;
       dispatcher.addEventListener('my-event', handler);
     });
 
     it('should pass call to receiver event dispatcher', () => {
-      expect(stub).to.be.calledOnce;
-      expect(stub).to.be.calledWith('my-event', handler);
+      expect(stub).toHaveBeenCalledTimes(1);
+      expect(stub).toHaveBeenCalledWith('my-event', handler);
     });
   });
 
@@ -46,13 +55,13 @@ describe('ServerDispatcher', () => {
     let stub;
 
     beforeEach(() => {
-      stub = sinon.stub(dispatcher.receiver, 'hasEventListener');
+      stub = jest.spyOn(dispatcher.receiver, 'hasEventListener');
       dispatcher.hasEventListener('my-event');
     });
 
     it('should pass call to receiver event dispatcher', () => {
-      expect(stub).to.be.calledOnce;
-      expect(stub).to.be.calledWith('my-event');
+      expect(stub).toHaveBeenCalledTimes(1);
+      expect(stub).toHaveBeenCalledWith('my-event');
     });
   });
 
@@ -61,14 +70,14 @@ describe('ServerDispatcher', () => {
     let handler;
 
     beforeEach(() => {
-      stub = sinon.stub(dispatcher.receiver, 'removeEventListener');
+      stub = jest.spyOn(dispatcher.receiver, 'removeEventListener');
       handler = () => null;
       dispatcher.removeEventListener('my-event', handler);
     });
 
     it('should pass call to receiver event dispatcher', () => {
-      expect(stub).to.be.calledOnce;
-      expect(stub).to.be.calledWith('my-event', handler);
+      expect(stub).toHaveBeenCalledTimes(1);
+      expect(stub).toHaveBeenCalledWith('my-event', handler);
     });
   });
 
@@ -76,12 +85,12 @@ describe('ServerDispatcher', () => {
     let stub;
 
     beforeEach(() => {
-      stub = sinon.stub(dispatcher.receiver, 'removeAllEventListeners');
+      stub = jest.spyOn(dispatcher.receiver, 'removeAllEventListeners');
       dispatcher.removeAllEventListeners();
     });
 
     it('should pass call to receiver event dispatcher', () => {
-      expect(stub).to.be.calledOnce;
+      expect(stub).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -91,11 +100,11 @@ describe('ServerDispatcher', () => {
 
     beforeEach(() => {
       port = new MessagePortBase();
-      connectHandler = sinon.spy();
+      connectHandler = jest.fn();
 
       dispatcher.addEventListener(WorkerEvent.CONNECT, connectHandler);
 
-      const handler = worker.addEventListener.getCall(0).args[1];
+      const handler = worker.addEventListener.mock.calls[0][1];
       handler({
         type: 'connect',
         ports: [port],
@@ -103,23 +112,23 @@ describe('ServerDispatcher', () => {
     });
 
     it('should dispatch CONNECT event', () => {
-      expect(connectHandler).to.be.calledOnce;
+      expect(connectHandler).toHaveBeenCalledTimes(1);
     });
 
     it('event should have client dispatcher', () => {
-      const event = connectHandler.getCall(0).args[0];
-      expect(event.client).to.be.an.instanceof(ClientDispatcher);
+      const event = connectHandler.mock.calls[0][0];
+      expect(event.client).toBeInstanceOf(ClientDispatcher);
     });
   });
 
   describe('When creating without args', () => {
     beforeEach(() => {
-      window.self = new EventTarget();
+      global.self = new EventTarget();
       dispatcher = new ServerDispatcher();
     });
 
     it('should use `self` thinking its SharedWorkerGlobalScope', () => {
-      expect(dispatcher.target).to.be.equal(window.self);
+      expect(dispatcher.target).toBe(global.self);
     });
   });
 });
