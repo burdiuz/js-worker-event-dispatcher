@@ -20,7 +20,11 @@ class ServerDispatcher {
   ) {
     this.type = WorkerType.SHARED_WORKER_SERVER;
     this.target = target;
-    this.clientFactory = (client) => new ClientDispatcher(client, clientReceiverEventPreprocessor, clientSenderEventPreprocessor);
+    this.clientFactory = (client) => new ClientDispatcher(
+      client,
+      clientReceiverEventPreprocessor,
+      clientSenderEventPreprocessor,
+    );
     this.receiver = createEventDispatcher(receiverEventPreprocessor);
     this.target.addEventListener('connect', this.handleConnect);
     dispatchWorkerEvents(this.target, this.receiver);
@@ -38,7 +42,9 @@ class ServerDispatcher {
     const [target] = event.ports;
     const client = this.clientFactory(target);
 
-    this.receiver.dispatchEvent(new WorkerEvent(WorkerEvent.CONNECT, client, event, client));
+    this.receiver.dispatchEvent(
+      new WorkerEvent(WorkerEvent.CONNECT, client, event, client),
+    );
   };
 }
 
