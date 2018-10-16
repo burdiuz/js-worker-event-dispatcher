@@ -10,9 +10,7 @@ import AbstractDispatcher from '../AbstractDispatcher';
  */
 class ClientDispatcher extends AbstractDispatcher {
   constructor(target, receiverEventPreprocessor, senderEventPreprocessor) {
-    super(WorkerType.SHARED_WORKER_CLIENT);
-
-    this.initialize(target, null, receiverEventPreprocessor, senderEventPreprocessor);
+    super(WorkerType.SHARED_WORKER_CLIENT, target, receiverEventPreprocessor, senderEventPreprocessor);
   }
 
   start() {
@@ -25,4 +23,3 @@ class ClientDispatcher extends AbstractDispatcher {
 }
 
 export default ClientDispatcher;
-

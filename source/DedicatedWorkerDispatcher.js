@@ -1,4 +1,4 @@
-import EventDispatcher from '@actualwave/event-dispatcher';
+import { isObject } from '@actualwave/event-dispatcher';
 import WorkerType from './WorkerType';
 import { dispatchWorkerEvents } from './WorkerEvent';
 import AbstractDispatcher from './AbstractDispatcher';
@@ -7,7 +7,7 @@ const getTarget = (worker) => {
   // eslint-disable-next-line no-restricted-globals
   let target = worker || self;
 
-  if (!EventDispatcher.isObject(target)) {
+  if (!isObject(target)) {
     target = new Worker(String(worker));
   }
 
@@ -24,12 +24,14 @@ const getTarget = (worker) => {
  */
 class DedicatedWorkerDispatcher extends AbstractDispatcher {
   constructor(worker, receiverEventPreprocessor, senderEventPreprocessor) {
-    super(WorkerType.DEDICATED_WORKER);
+    super(
+      WorkerType.DEDICATED_WORKER,
+      getTarget(worker),
+      receiverEventPreprocessor,
+      senderEventPreprocessor,
+    );
 
-    const target = getTarget(worker);
-
-    this.initialize(target, receiverEventPreprocessor, senderEventPreprocessor);
-    dispatchWorkerEvents(target, this.receiver);
+    dispatchWorkerEvents(this.target, this.receiver);
   }
 
   terminate() {

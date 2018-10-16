@@ -771,20 +771,28 @@
    */
 
   const create = (target, type, receiverEventPreprocessor, senderEventPreprocessor) => {
+    let dispatcher = null;
+
     switch (type) {
       default:
       case WorkerType.DEDICATED_WORKER:
-        return new DedicatedWorkerDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+        dispatcher = new DedicatedWorkerDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+        break;
 
       case WorkerType.SHARED_WORKER:
-        return new SharedWorkerDispatcher(target, null, receiverEventPreprocessor, senderEventPreprocessor);
+        dispatcher = new SharedWorkerDispatcher(target, null, receiverEventPreprocessor, senderEventPreprocessor);
+        break;
 
       case WorkerType.SHARED_WORKER_SERVER:
-        return new ServerDispatcher(target, receiverEventPreprocessor);
+        dispatcher = new ServerDispatcher(target, receiverEventPreprocessor);
+        break;
 
       case WorkerType.SHARED_WORKER_CLIENT:
-        return new ClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+        dispatcher = new ClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+        break;
     }
+
+    return dispatcher;
   };
   /**
    *
@@ -795,11 +803,15 @@
 
   const createForSelf = (receiverEventPreprocessor, senderEventPreprocessor) => {
     /* eslint-disable no-restricted-globals */
+    let dispatcher = null;
+
     if (typeof self.postMessage === 'function') {
-      return new DedicatedWorkerDispatcher(self, receiverEventPreprocessor, senderEventPreprocessor);
+      dispatcher = new DedicatedWorkerDispatcher(self, receiverEventPreprocessor, senderEventPreprocessor);
+    } else {
+      dispatcher = new ServerDispatcher(self, receiverEventPreprocessor);
     }
 
-    return new ServerDispatcher(self, receiverEventPreprocessor);
+    return dispatcher;
     /* eslint-enable no-restricted-globals */
   };
 

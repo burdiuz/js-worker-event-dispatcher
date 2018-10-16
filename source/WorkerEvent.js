@@ -11,10 +11,15 @@ export const NativeEventTypes = {
 
 class WorkerEvent extends Event {
   static CONNECT = 'worker:connect';
+
   static MESSAGE = 'worker:message';
+
   static ERROR = 'worker:error';
+
   static LANGUAGECHANGE = 'worker:languagechange';
+
   static ONLINE = 'worker:online';
+
   static OFFLINE = 'worker:offline';
 
   constructor(type, data, sourceEvent, client) {
@@ -45,6 +50,7 @@ export const getWorkerEventType = (type) => {
 
 export const dispatchWorkerEvent = (type, source, target) => {
   const eventType = getWorkerEventType(type);
+
   const handler = (event) => {
     if (target.hasEventListener(eventType)) {
       target.dispatchEvent(new WorkerEvent(eventType, event, event));

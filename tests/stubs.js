@@ -2,35 +2,44 @@
  * Created by Oleg Galaburda on 16.02.16.
  */
 
-export const EventTarget = sinon.spy(function () {
-  this.addEventListener = sinon.spy();
-  this.hasEventListener = sinon.spy();
-  this.removeEventListener = sinon.spy();
+export const EventTarget = jest.fn(function () {
+  this.type = 'EventTarget';
+  this.addEventListener = jest.fn();
+  this.hasEventListener = jest.fn();
+  this.removeEventListener = jest.fn();
 });
 
-export const MessagePortBase = sinon.spy(function () {
+export const MessagePortBase = jest.fn(function () {
   EventTarget.call(this);
-  this.postMessage = sinon.spy();
+
+  this.type = 'MessagePortBase';
+  this.postMessage = jest.fn();
 });
 
-export const MessagePort = sinon.spy(function () {
+export const MessagePort = jest.fn(function () {
   MessagePortBase.call(this);
-  this.start = sinon.spy();
-  this.close = sinon.spy();
+
+  this.type = 'MessagePort';
+  this.start = jest.fn();
+  this.close = jest.fn();
 });
 
-export const Worker = sinon.spy(function () {
+export const Worker = jest.fn(function () {
   MessagePortBase.call(this);
-  this.terminate = sinon.spy();
+
+  this.type = 'Worker';
+  this.terminate = jest.fn();
 });
 
-export const SharedWorker = sinon.spy(function () {
+export const SharedWorker = jest.fn(function () {
   this.port = new MessagePort();
+
+  this.type = 'SharedWorker';
   EventTarget.call(this);
 });
 
 export const apply = () => {
-  window.MessagePort = MessagePort;
-  window.Worker = Worker;
-  window.SharedWorker = SharedWorker;
+  global.MessagePort = MessagePort;
+  global.Worker = Worker;
+  global.SharedWorker = SharedWorker;
 };
