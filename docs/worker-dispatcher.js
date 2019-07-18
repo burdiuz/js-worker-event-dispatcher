@@ -351,7 +351,7 @@
   var eventDispatcher_4 = eventDispatcher.getEvent;
   var eventDispatcher_5 = eventDispatcher.isObject;
 
-  const NativeEventTypes = {
+  const NativeEventType = {
     CONNECT: 'connect',
     MESSAGE: 'message',
     ERROR: 'error',
@@ -377,22 +377,22 @@
   WorkerEvent.OFFLINE = 'worker:offline';
   const getWorkerEventType = type => {
     switch (type) {
-      case NativeEventTypes.CONNECT:
+      case NativeEventType.CONNECT:
         return WorkerEvent.CONNECT;
 
-      case NativeEventTypes.MESSAGE:
+      case NativeEventType.MESSAGE:
         return WorkerEvent.MESSAGE;
 
-      case NativeEventTypes.ERROR:
+      case NativeEventType.ERROR:
         return WorkerEvent.ERROR;
 
-      case NativeEventTypes.LANGUAGECHANGE:
+      case NativeEventType.LANGUAGECHANGE:
         return WorkerEvent.LANGUAGECHANGE;
 
-      case NativeEventTypes.ONLINE:
+      case NativeEventType.ONLINE:
         return WorkerEvent.ONLINE;
 
-      case NativeEventTypes.OFFLINE:
+      case NativeEventType.OFFLINE:
         return WorkerEvent.OFFLINE;
 
       default:
@@ -412,13 +412,13 @@
     return handler;
   };
   const dispatchWorkerEvents = (source, target) => {
-    dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
-    dispatchWorkerEvent(NativeEventTypes.LANGUAGECHANGE, source, target);
-    dispatchWorkerEvent(NativeEventTypes.ONLINE, source, target);
-    dispatchWorkerEvent(NativeEventTypes.OFFLINE, source, target);
+    dispatchWorkerEvent(NativeEventType.ERROR, source, target);
+    dispatchWorkerEvent(NativeEventType.LANGUAGECHANGE, source, target);
+    dispatchWorkerEvent(NativeEventType.ONLINE, source, target);
+    dispatchWorkerEvent(NativeEventType.OFFLINE, source, target);
   };
   const dispatchWorkerErrorEvent = (source, target) => {
-    dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
+    dispatchWorkerEvent(NativeEventType.ERROR, source, target);
   };
 
   var messageportDispatcher = createCommonjsModule(function (module, exports) {

@@ -21,14 +21,26 @@ const getTarget = (target, name) => {
  * @constructor
  */
 class SharedWorkerDispatcher extends AbstractDispatcher {
-  constructor(target, name, receiverEventPreprocessor, senderEventPreprocessor) {
+  constructor(
+    target,
+    name,
+    receiverEventPreprocessor,
+    senderEventPreprocessor,
+  ) {
     const worker = getTarget(target, name);
 
-    super(WorkerType.SHARED_WORKER, worker.port, receiverEventPreprocessor, senderEventPreprocessor);
+    super(
+      WorkerType.SHARED_WORKER,
+      worker.port,
+      receiverEventPreprocessor,
+      senderEventPreprocessor,
+    );
 
     this.worker = worker;
 
     dispatchWorkerErrorEvent(this.worker, this.receiver);
+
+    this.start();
   }
 
   start() {

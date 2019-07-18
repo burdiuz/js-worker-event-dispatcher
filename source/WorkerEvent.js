@@ -1,12 +1,20 @@
 import { Event } from '@actualwave/event-dispatcher';
 
-export const NativeEventTypes = {
+export const NativeEventType = {
   CONNECT: 'connect',
   MESSAGE: 'message',
   ERROR: 'error',
+  MESSAGEERROR: 'messageerror',
   LANGUAGECHANGE: 'languagechange',
   ONLINE: 'online',
   OFFLINE: 'offline',
+
+  /* Service Worker specific events */
+  INSTALL: 'install',
+  ACTIVATE: 'activate',
+  FETCH: 'fetch',
+  SYNC: 'sync',
+  PUSH: 'push',
 };
 
 class WorkerEvent extends Event {
@@ -16,35 +24,63 @@ class WorkerEvent extends Event {
 
   static ERROR = 'worker:error';
 
+  static MESSAGEERROR = 'messageerror';
+
   static LANGUAGECHANGE = 'worker:languagechange';
 
   static ONLINE = 'worker:online';
 
   static OFFLINE = 'worker:offline';
 
-  constructor(type, data, sourceEvent, client) {
+  /* Service Worker specific events */
+
+  static INSTALL: 'worker:install';
+
+  static ACTIVATE: 'worker:activate';
+
+  static FETCH: 'worker:fetch';
+
+  static SYNC: 'worker:sync';
+
+  static PUSH: 'worker:push';
+
+  constructor(type, data, nativeEvent, client) {
     super(type, data);
-    this.sourceEvent = sourceEvent;
+    this.nativeEvent = nativeEvent;
     this.client = client;
   }
 }
 
 export const getWorkerEventType = (type) => {
   switch (type) {
-    case NativeEventTypes.CONNECT:
+    case NativeEventType.CONNECT:
       return WorkerEvent.CONNECT;
-    case NativeEventTypes.MESSAGE:
+    case NativeEventType.MESSAGE:
       return WorkerEvent.MESSAGE;
-    case NativeEventTypes.ERROR:
+    case NativeEventType.ERROR:
       return WorkerEvent.ERROR;
-    case NativeEventTypes.LANGUAGECHANGE:
+    case NativeEventType.MESSAGEERROR:
+      return WorkerEvent.MESSAGEERROR;
+    case NativeEventType.LANGUAGECHANGE:
       return WorkerEvent.LANGUAGECHANGE;
-    case NativeEventTypes.ONLINE:
+    case NativeEventType.ONLINE:
       return WorkerEvent.ONLINE;
-    case NativeEventTypes.OFFLINE:
+    case NativeEventType.OFFLINE:
       return WorkerEvent.OFFLINE;
+
+    /* Service Worker specific events */
+    case NativeEventType.INSTALL:
+      return WorkerEvent.INSTALL;
+    case NativeEventType.ACTIVATE:
+      return WorkerEvent.ACTIVATE;
+    case NativeEventType.FETCH:
+      return WorkerEvent.FETCH;
+    case NativeEventType.SYNC:
+      return WorkerEvent.SYNC;
+    case NativeEventType.PUSH:
+      return WorkerEvent.PUSH;
     default:
-      return null;
+      return type;
   }
 };
 
@@ -62,14 +98,23 @@ export const dispatchWorkerEvent = (type, source, target) => {
 };
 
 export const dispatchWorkerEvents = (source, target) => {
-  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
-  dispatchWorkerEvent(NativeEventTypes.LANGUAGECHANGE, source, target);
-  dispatchWorkerEvent(NativeEventTypes.ONLINE, source, target);
-  dispatchWorkerEvent(NativeEventTypes.OFFLINE, source, target);
+  dispatchWorkerEvent(NativeEventType.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.LANGUAGECHANGE, source, target);
+  dispatchWorkerEvent(NativeEventType.ONLINE, source, target);
+  dispatchWorkerEvent(NativeEventType.OFFLINE, source, target);
+};
+
+export const dispatchServiceWorkerEvents = (source, target) => {
+  dispatchWorkerEvent(NativeEventType.INSTALL, source, target);
+  dispatchWorkerEvent(NativeEventType.ACTIVATE, source, target);
+  dispatchWorkerEvent(NativeEventType.FETCH, source, target);
+  dispatchWorkerEvent(NativeEventType.SYNC, source, target);
+  dispatchWorkerEvent(NativeEventType.PUSH, source, target);
 };
 
 export const dispatchWorkerErrorEvent = (source, target) => {
-  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.MESSAGEERROR, source, target);
 };
 
 export default WorkerEvent;

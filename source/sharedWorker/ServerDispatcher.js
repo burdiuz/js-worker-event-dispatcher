@@ -1,7 +1,11 @@
+/* eslint-disable no-restricted-globals */
 import { createEventDispatcher } from '@actualwave/event-dispatcher';
 import WorkerType from '../WorkerType';
-import WorkerEvent, { dispatchWorkerEvents } from '../WorkerEvent';
-import ClientDispatcher from './ClientDispatcher';
+import WorkerEvent, {
+  NativeEventType,
+  dispatchWorkerEvents,
+} from '../WorkerEvent';
+import SharedClientDispatcher from './ClientDispatcher';
 
 /**
  * Read-only interface, mainly will listen to "connect" event.
@@ -11,22 +15,22 @@ import ClientDispatcher from './ClientDispatcher';
  * @param receiverEventPreprocessor {?Function}
  * @constructor
  */
-class ServerDispatcher {
+class SharedServerDispatcher {
   constructor(
-    target = self, // eslint-disable-line no-restricted-globals
+    target = self,
     receiverEventPreprocessor,
     clientReceiverEventPreprocessor,
     clientSenderEventPreprocessor,
   ) {
     this.type = WorkerType.SHARED_WORKER_SERVER;
     this.target = target;
-    this.clientFactory = (client) => new ClientDispatcher(
+    this.clientFactory = (client) => new SharedClientDispatcher(
       client,
       clientReceiverEventPreprocessor,
       clientSenderEventPreprocessor,
     );
     this.receiver = createEventDispatcher(receiverEventPreprocessor);
-    this.target.addEventListener('connect', this.handleConnect);
+    this.target.addEventListener(NativeEventType.CONNECT, this.handleConnect);
     dispatchWorkerEvents(this.target, this.receiver);
   }
 
@@ -48,4 +52,4 @@ class ServerDispatcher {
   };
 }
 
-export default ServerDispatcher;
+export default SharedServerDispatcher;

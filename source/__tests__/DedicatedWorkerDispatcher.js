@@ -3,7 +3,7 @@
  */
 
 import { apply, Worker, MessagePort } from '../../tests/stubs';
-import { NativeEventTypes } from '../WorkerEvent';
+import { NativeEventType } from '../WorkerEvent';
 import DedicatedWorkerDispatcher from '../DedicatedWorkerDispatcher';
 
 describe('DedicatedWorkerDispatcher', () => {
@@ -27,26 +27,26 @@ describe('DedicatedWorkerDispatcher', () => {
 
   it('should add listeners to events', () => {
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.ERROR,
+      NativeEventType.ERROR,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.LANGUAGECHANGE,
+      NativeEventType.LANGUAGECHANGE,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.ONLINE,
+      NativeEventType.ONLINE,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.OFFLINE,
+      NativeEventType.OFFLINE,
       expect.any(Function),
     );
   });
 
   it('should call port.addEventListener()', () => {
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.MESSAGE,
+      NativeEventType.MESSAGE,
       expect.any(Function),
     );
   });

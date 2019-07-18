@@ -14,11 +14,22 @@ const WorkerType = {
   /**
    * @private
    */
-  SHARED_WORKER_CLIENT: 'sharedClient'
+  SHARED_WORKER_CLIENT: 'sharedClient',
+  SERVICE_WORKER: 'service',
+
+  /**
+   * @private
+   */
+  SERVICE_WORKER_SERVER: 'serviceServer',
+
+  /**
+   * @private
+   */
+  SERVICE_WORKER_CLIENT: 'serviceClient'
 };
 
 function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x.default : x;
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 }
 
 function createCommonjsModule(fn, module) {
@@ -349,19 +360,27 @@ var eventDispatcher_3 = eventDispatcher.createEventDispatcher;
 var eventDispatcher_4 = eventDispatcher.getEvent;
 var eventDispatcher_5 = eventDispatcher.isObject;
 
-const NativeEventTypes = {
+const NativeEventType = {
   CONNECT: 'connect',
   MESSAGE: 'message',
   ERROR: 'error',
+  MESSAGEERROR: 'messageerror',
   LANGUAGECHANGE: 'languagechange',
   ONLINE: 'online',
-  OFFLINE: 'offline'
+  OFFLINE: 'offline',
+
+  /* Service Worker specific events */
+  INSTALL: 'install',
+  ACTIVATE: 'activate',
+  FETCH: 'fetch',
+  SYNC: 'sync',
+  PUSH: 'push'
 };
 
 class WorkerEvent extends eventDispatcher_1 {
-  constructor(type, data, sourceEvent, client) {
+  constructor(type, data, nativeEvent, client) {
     super(type, data);
-    this.sourceEvent = sourceEvent;
+    this.nativeEvent = nativeEvent;
     this.client = client;
   }
 
@@ -370,31 +389,52 @@ class WorkerEvent extends eventDispatcher_1 {
 WorkerEvent.CONNECT = 'worker:connect';
 WorkerEvent.MESSAGE = 'worker:message';
 WorkerEvent.ERROR = 'worker:error';
+WorkerEvent.MESSAGEERROR = 'messageerror';
 WorkerEvent.LANGUAGECHANGE = 'worker:languagechange';
 WorkerEvent.ONLINE = 'worker:online';
 WorkerEvent.OFFLINE = 'worker:offline';
 const getWorkerEventType = type => {
   switch (type) {
-    case NativeEventTypes.CONNECT:
+    case NativeEventType.CONNECT:
       return WorkerEvent.CONNECT;
 
-    case NativeEventTypes.MESSAGE:
+    case NativeEventType.MESSAGE:
       return WorkerEvent.MESSAGE;
 
-    case NativeEventTypes.ERROR:
+    case NativeEventType.ERROR:
       return WorkerEvent.ERROR;
 
-    case NativeEventTypes.LANGUAGECHANGE:
+    case NativeEventType.MESSAGEERROR:
+      return WorkerEvent.MESSAGEERROR;
+
+    case NativeEventType.LANGUAGECHANGE:
       return WorkerEvent.LANGUAGECHANGE;
 
-    case NativeEventTypes.ONLINE:
+    case NativeEventType.ONLINE:
       return WorkerEvent.ONLINE;
 
-    case NativeEventTypes.OFFLINE:
+    case NativeEventType.OFFLINE:
       return WorkerEvent.OFFLINE;
 
+    /* Service Worker specific events */
+
+    case NativeEventType.INSTALL:
+      return WorkerEvent.INSTALL;
+
+    case NativeEventType.ACTIVATE:
+      return WorkerEvent.ACTIVATE;
+
+    case NativeEventType.FETCH:
+      return WorkerEvent.FETCH;
+
+    case NativeEventType.SYNC:
+      return WorkerEvent.SYNC;
+
+    case NativeEventType.PUSH:
+      return WorkerEvent.PUSH;
+
     default:
-      return null;
+      return type;
   }
 };
 const dispatchWorkerEvent = (type, source, target) => {
@@ -410,13 +450,14 @@ const dispatchWorkerEvent = (type, source, target) => {
   return handler;
 };
 const dispatchWorkerEvents = (source, target) => {
-  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
-  dispatchWorkerEvent(NativeEventTypes.LANGUAGECHANGE, source, target);
-  dispatchWorkerEvent(NativeEventTypes.ONLINE, source, target);
-  dispatchWorkerEvent(NativeEventTypes.OFFLINE, source, target);
+  dispatchWorkerEvent(NativeEventType.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.LANGUAGECHANGE, source, target);
+  dispatchWorkerEvent(NativeEventType.ONLINE, source, target);
+  dispatchWorkerEvent(NativeEventType.OFFLINE, source, target);
 };
 const dispatchWorkerErrorEvent = (source, target) => {
-  dispatchWorkerEvent(NativeEventTypes.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.ERROR, source, target);
+  dispatchWorkerEvent(NativeEventType.MESSAGEERROR, source, target);
 };
 
 var messageportDispatcher = createCommonjsModule(function (module, exports) {
@@ -588,25 +629,29 @@ const getForSelf = factory(() => self);
 const getForParent = factory(() => parent);
 const getForTop = factory(() => top);
 
-exports.default = MessagePortDispatcher;
 exports.MessagePortDispatcher = MessagePortDispatcher;
 exports.MessagePortEvent = MessagePortEvent;
-exports.factory = factory;
-exports.getForSelf = getForSelf;
-exports.getForParent = getForParent;
-exports.getForTop = getForTop;
 exports.createMessagePortDispatcher = createMessagePortDispatcher;
+exports.default = MessagePortDispatcher;
+exports.factory = factory;
+exports.getForParent = getForParent;
+exports.getForSelf = getForSelf;
+exports.getForTop = getForTop;
+exports.isMessagePortEvent = isMessagePortEvent;
+exports.parseMessagePortEvent = parseMessagePortEvent;
 
 });
 
 var MessagePortDispatcher = unwrapExports(messageportDispatcher);
 var messageportDispatcher_1 = messageportDispatcher.MessagePortDispatcher;
 var messageportDispatcher_2 = messageportDispatcher.MessagePortEvent;
-var messageportDispatcher_3 = messageportDispatcher.factory;
-var messageportDispatcher_4 = messageportDispatcher.getForSelf;
+var messageportDispatcher_3 = messageportDispatcher.createMessagePortDispatcher;
+var messageportDispatcher_4 = messageportDispatcher.factory;
 var messageportDispatcher_5 = messageportDispatcher.getForParent;
-var messageportDispatcher_6 = messageportDispatcher.getForTop;
-var messageportDispatcher_7 = messageportDispatcher.createMessagePortDispatcher;
+var messageportDispatcher_6 = messageportDispatcher.getForSelf;
+var messageportDispatcher_7 = messageportDispatcher.getForTop;
+var messageportDispatcher_8 = messageportDispatcher.isMessagePortEvent;
+var messageportDispatcher_9 = messageportDispatcher.parseMessagePortEvent;
 
 /**
  *
@@ -682,6 +727,7 @@ class SharedWorkerDispatcher extends AbstractDispatcher {
     super(WorkerType.SHARED_WORKER, worker.port, receiverEventPreprocessor, senderEventPreprocessor);
     this.worker = worker;
     dispatchWorkerErrorEvent(this.worker, this.receiver);
+    this.start();
   }
 
   start() {
@@ -702,7 +748,7 @@ class SharedWorkerDispatcher extends AbstractDispatcher {
  * @constructor
  */
 
-class ClientDispatcher extends AbstractDispatcher {
+class SharedClientDispatcher extends AbstractDispatcher {
   constructor(target, receiverEventPreprocessor, senderEventPreprocessor) {
     super(WorkerType.SHARED_WORKER_CLIENT, target, receiverEventPreprocessor, senderEventPreprocessor);
   }
@@ -717,6 +763,7 @@ class ClientDispatcher extends AbstractDispatcher {
 
 }
 
+/* eslint-disable no-restricted-globals */
 /**
  * Read-only interface, mainly will listen to "connect" event.
  * You should listen to WorkerEvent.CONNECT to intercept client
@@ -726,18 +773,17 @@ class ClientDispatcher extends AbstractDispatcher {
  * @constructor
  */
 
-class ServerDispatcher {
-  constructor(target = self, // eslint-disable-line no-restricted-globals
-  receiverEventPreprocessor, clientReceiverEventPreprocessor, clientSenderEventPreprocessor) {
+class SharedServerDispatcher {
+  constructor(target = self, receiverEventPreprocessor, clientReceiverEventPreprocessor, clientSenderEventPreprocessor) {
     _initialiseProps.call(this);
 
     this.type = WorkerType.SHARED_WORKER_SERVER;
     this.target = target;
 
-    this.clientFactory = client => new ClientDispatcher(client, clientReceiverEventPreprocessor, clientSenderEventPreprocessor);
+    this.clientFactory = client => new SharedClientDispatcher(client, clientReceiverEventPreprocessor, clientSenderEventPreprocessor);
 
     this.receiver = eventDispatcher_3(receiverEventPreprocessor);
-    this.target.addEventListener('connect', this.handleConnect);
+    this.target.addEventListener(NativeEventType.CONNECT, this.handleConnect);
     dispatchWorkerEvents(this.target, this.receiver);
   }
 
@@ -759,6 +805,163 @@ var _initialiseProps = function () {
   };
 };
 
+/* eslint-disable class-methods-use-this */
+
+const getServiceWorker = async () => {
+  await navigator.serviceWorker.ready;
+  const registration = await navigator.serviceWorker.getRegistration();
+  return registration.active;
+};
+
+const createTarget = () => {
+  const channel = new MessageChannel();
+  return {
+    postMessage: async message => {
+      const worker = await getServiceWorker();
+      return worker.postMessage(message, [channel.port2]);
+    },
+
+    get onmessage() {
+      return channel.port1.onmessage;
+    },
+
+    set onmessage(handler) {
+      channel.port1.onmessage = handler;
+    },
+
+    start: () => {
+      channel.port1.start();
+    },
+    close: () => {
+      channel.port1.close();
+    },
+    addEventListener: (...args) => {
+      return channel.port1.addEventListener(...args);
+    }
+  };
+};
+/**
+ *
+ * @param receiverEventPreprocessor {?Function}
+ * @param senderEventPreprocessor {?Function}
+ * @extends WorkerMessenger
+ * @constructor
+ */
+
+
+class ServiceWorkerDispatcher extends AbstractDispatcher {
+  constructor(receiverEventPreprocessor, senderEventPreprocessor) {
+    super(WorkerType.SERVICE_WORKER, createTarget(), receiverEventPreprocessor, senderEventPreprocessor);
+    this.start();
+    dispatchWorkerErrorEvent(this.target, this.receiver);
+  }
+
+  start() {
+    return this.target.start();
+  }
+
+  close() {
+    return this.target.close();
+  }
+
+  onReady(handler) {
+    return navigator.serviceWorker.ready.then(handler);
+  }
+
+  get ready() {
+    return navigator.serviceWorker.ready;
+  }
+
+}
+
+/**
+ * @param target {MessagePort}
+ * @param receiverEventPreprocessor {?Function}
+ * @param senderEventPreprocessor {?Function}
+ * @extends MessagePortDispatcher
+ * @constructor
+ */
+
+class ServiceClientDispatcher extends AbstractDispatcher {
+  constructor(target, receiverEventPreprocessor, senderEventPreprocessor) {
+    super(WorkerType.SERVICE_WORKER_CLIENT, target, receiverEventPreprocessor, senderEventPreprocessor);
+  }
+
+  start() {
+    this.target.start();
+  }
+
+  close() {
+    this.target.close();
+  }
+
+}
+
+/* eslint-disable no-restricted-globals */
+/**
+ * Read-only interface, mainly will listen to "connect" event.
+ * You should listen to WorkerEvent.CONNECT to intercept client
+ * instance to be able to communicate.
+ * @param worker
+ * @param receiverEventPreprocessor {?Function}
+ * @constructor
+ */
+
+class ServiceServerDispatcher {
+  constructor(target = self, receiverEventPreprocessor, clientReceiverEventPreprocessor, clientSenderEventPreprocessor) {
+    this.addEventListener = (...args) => this.receiver.addEventListener(...args);
+
+    this.hasEventListener = (...args) => this.receiver.hasEventListener(...args);
+
+    this.removeEventListener = (...args) => this.receiver.removeEventListener(...args);
+
+    this.removeAllEventListeners = (...args) => this.receiver.removeAllEventListeners(...args);
+
+    this.type = WorkerType.SERVICE_WORKER_SERVER;
+    this.target = target;
+
+    this.clientFactory = port => {
+      if (!port) {
+        return null;
+      }
+
+      return new ServiceClientDispatcher(port, clientReceiverEventPreprocessor, clientSenderEventPreprocessor);
+    };
+
+    this.receiver = eventDispatcher_3(receiverEventPreprocessor);
+    dispatchWorkerErrorEvent(target, this.receiver);
+    target.addEventListener(NativeEventType.MESSAGE, event => this._postMessageListener(event));
+  }
+
+  /**
+   * @private
+   */
+  _postMessageListener(nativeEvent) {
+    const {
+      data: rawMessage,
+      ports: [client]
+    } = nativeEvent;
+
+    if (!rawMessage) {
+      return;
+    }
+
+    const {
+      event: {
+        type: eventType,
+        data: eventData
+      }
+    } = messageportDispatcher_9(rawMessage);
+    const event = new WorkerEvent(eventType, eventData, nativeEvent, this.clientFactory(client));
+    this.receiver.dispatchEvent(event);
+  }
+
+}
+
+/* eslint-disable no-restricted-globals */
+const createForDedicatedWorker = (target, receiverEventPreprocessor, senderEventPreprocessor) => new DedicatedWorkerDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+const createForSharedWorker = (target, receiverEventPreprocessor, senderEventPreprocessor) => new SharedWorkerDispatcher(target, null, receiverEventPreprocessor, senderEventPreprocessor);
+const createForServiceWorker = (receiverEventPreprocessor, senderEventPreprocessor) => new ServiceWorkerDispatcher(receiverEventPreprocessor, senderEventPreprocessor);
 /**
  *
  * @param worker {String|Worker|SharedWorker|MessagePort}
@@ -772,16 +975,25 @@ const create = (target, type, receiverEventPreprocessor, senderEventPreprocessor
   switch (type) {
     default:
     case WorkerType.DEDICATED_WORKER:
-      return new DedicatedWorkerDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+      return createForDedicatedWorker(target, receiverEventPreprocessor, senderEventPreprocessor);
 
     case WorkerType.SHARED_WORKER:
-      return new SharedWorkerDispatcher(target, null, receiverEventPreprocessor, senderEventPreprocessor);
+      return createForSharedWorker(target, receiverEventPreprocessor, senderEventPreprocessor);
 
     case WorkerType.SHARED_WORKER_SERVER:
-      return new ServerDispatcher(target, receiverEventPreprocessor);
+      return new SharedServerDispatcher(target, receiverEventPreprocessor);
 
     case WorkerType.SHARED_WORKER_CLIENT:
-      return new ClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+      return new SharedClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
+
+    case WorkerType.SERVICE_WORKER:
+      return createForServiceWorker(receiverEventPreprocessor, senderEventPreprocessor);
+
+    case WorkerType.SERVICE_WORKER_SERVER:
+      return new ServiceServerDispatcher(target, receiverEventPreprocessor);
+
+    case WorkerType.SERVICE_WORKER_CLIENT:
+      return new ServiceClientDispatcher(target, receiverEventPreprocessor, senderEventPreprocessor);
   }
 };
 /**
@@ -792,33 +1004,44 @@ const create = (target, type, receiverEventPreprocessor, senderEventPreprocessor
  */
 
 const createForSelf = (receiverEventPreprocessor, senderEventPreprocessor) => {
-  /* eslint-disable no-restricted-globals */
+  // Only dedicated WebWorker has postMessage since they have single client
   if (typeof self.postMessage === 'function') {
     return new DedicatedWorkerDispatcher(self, receiverEventPreprocessor, senderEventPreprocessor);
+  } // Only ServiceWorker has registration object
+
+
+  if (self.registration && typeof self.registration.scope === 'string') {
+    return new ServiceServerDispatcher(self, receiverEventPreprocessor);
   }
 
-  return new ServerDispatcher(self, receiverEventPreprocessor);
-  /* eslint-enable no-restricted-globals */
+  return new SharedServerDispatcher(self, receiverEventPreprocessor);
 };
 
 const CONNECT_EVENT = WorkerEvent.CONNECT;
 const {
-  DEDICATED_WORKER
-} = WorkerType;
-const {
-  SHARED_WORKER
+  DEDICATED_WORKER,
+  SHARED_WORKER,
+  SERVICE_WORKER
 } = WorkerType;
 
-exports.default = DedicatedWorkerDispatcher;
-exports.create = create;
-exports.createForSelf = createForSelf;
 exports.CONNECT_EVENT = CONNECT_EVENT;
 exports.DEDICATED_WORKER = DEDICATED_WORKER;
+exports.DedicatedWorkerDispatcher = DedicatedWorkerDispatcher;
+exports.NativeEventType = NativeEventType;
+exports.SERVICE_WORKER = SERVICE_WORKER;
 exports.SHARED_WORKER = SHARED_WORKER;
+exports.ServiceClientDispatcher = ServiceClientDispatcher;
+exports.ServiceServerDispatcher = ServiceServerDispatcher;
+exports.ServiceWorkerDispatcher = ServiceWorkerDispatcher;
+exports.SharedClientDispatcher = SharedClientDispatcher;
+exports.SharedServerDispatcher = SharedServerDispatcher;
+exports.SharedWorkerDispatcher = SharedWorkerDispatcher;
 exports.WorkerEvent = WorkerEvent;
 exports.WorkerType = WorkerType;
-exports.ClientDispatcher = ClientDispatcher;
-exports.ServerDispatcher = ServerDispatcher;
-exports.SharedWorkerDispatcher = SharedWorkerDispatcher;
-exports.DedicatedWorkerDispatcher = DedicatedWorkerDispatcher;
+exports.create = create;
+exports.createForDedicatedWorker = createForDedicatedWorker;
+exports.createForSelf = createForSelf;
+exports.createForServiceWorker = createForServiceWorker;
+exports.createForSharedWorker = createForSharedWorker;
+exports.default = DedicatedWorkerDispatcher;
 //# sourceMappingURL=index.js.map

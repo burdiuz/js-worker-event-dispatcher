@@ -8,10 +8,10 @@ import AbstractDispatcher from '../AbstractDispatcher';
  * @extends MessagePortDispatcher
  * @constructor
  */
-class SharedClientDispatcher extends AbstractDispatcher {
+class ServiceClientDispatcher extends AbstractDispatcher {
   constructor(target, receiverEventPreprocessor, senderEventPreprocessor) {
     super(
-      WorkerType.SHARED_WORKER_CLIENT,
+      WorkerType.SERVICE_WORKER_CLIENT,
       target,
       receiverEventPreprocessor,
       senderEventPreprocessor,
@@ -27,4 +27,4 @@ class SharedClientDispatcher extends AbstractDispatcher {
   }
 }
 
-export default SharedClientDispatcher;
+export default ServiceClientDispatcher;

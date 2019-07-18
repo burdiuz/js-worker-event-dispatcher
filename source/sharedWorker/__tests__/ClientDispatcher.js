@@ -2,17 +2,17 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import { NativeEventTypes } from '../../WorkerEvent';
-import ClientDispatcher from '../ClientDispatcher';
+import { NativeEventType } from '../../WorkerEvent';
+import SharedClientDispatcher from '../ClientDispatcher';
 import { MessagePort } from '../../../tests/stubs';
 
-describe('ClientDispatcher', () => {
+describe('SharedClientDispatcher', () => {
   let port;
   let dispatcher;
 
   beforeEach(() => {
     port = new MessagePort();
-    dispatcher = new ClientDispatcher(port);
+    dispatcher = new SharedClientDispatcher(port);
   });
 
   it('should have Dispatcher interface', () => {
@@ -25,7 +25,7 @@ describe('ClientDispatcher', () => {
 
   it('should call port.addEventListener()', () => {
     expect(port.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.MESSAGE,
+      NativeEventType.MESSAGE,
       expect.any(Function),
     );
   });

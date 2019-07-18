@@ -5,10 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WorkerEventDispatcher Example</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
-    crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+    integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
     crossorigin="anonymous"></script>
   <script type="text/javascript" src="worker-dispatcher.js"></script>
 </head>
@@ -41,7 +42,7 @@
   // SharedWorker UI
   (() => {
     const worker = new SharedWorker('sharedworker.js');
-    const dispatcher = WorkerDispatcher.create(worker, WorkerDispatcher.SHARED_WORKER);
+    const dispatcher = WorkerDispatcher.createForSharedWorker(worker);
 
     const addMessage = (name, text) => {
       $('#messages').prepend(`
@@ -82,8 +83,6 @@
         }
       });
       $('.btn-primary').on('click', messageHandler);
-
-      dispatcher.start();
     });
   })();
 </script>

@@ -3,7 +3,7 @@
  */
 
 import { apply, SharedWorker, MessagePort } from '../../tests/stubs';
-import { NativeEventTypes } from '../WorkerEvent';
+import { NativeEventType } from '../WorkerEvent';
 import SharedWorkerDispatcher from '../SharedWorkerDispatcher';
 
 describe('SharedWorkerDispatcher', () => {
@@ -26,16 +26,20 @@ describe('SharedWorkerDispatcher', () => {
       expect(dispatcher.dispatchEvent).toBeInstanceOf(Function);
     });
 
+    it('should call start()', () => {
+      expect(worker.port.start).toHaveBeenCalledTimes(1);
+    });
+
     it('should add listener to ERROR event', () => {
       expect(worker.addEventListener).toHaveBeenCalledWith(
-        NativeEventTypes.ERROR,
+        NativeEventType.ERROR,
         expect.any(Function),
       );
     });
 
     it('should call port.addEventListener()', () => {
       expect(worker.port.addEventListener).toHaveBeenCalledWith(
-        NativeEventTypes.MESSAGE,
+        NativeEventType.MESSAGE,
         expect.any(Function),
       );
     });
@@ -47,6 +51,7 @@ describe('SharedWorkerDispatcher', () => {
 
     describe('start()', () => {
       beforeEach(() => {
+        worker.port.start.mockClear();
         dispatcher.start();
       });
 

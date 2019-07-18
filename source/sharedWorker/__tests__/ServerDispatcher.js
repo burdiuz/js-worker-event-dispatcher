@@ -2,35 +2,35 @@
  * Created by Oleg Galaburda on 15.02.16.
  */
 
-import WorkerEvent, { NativeEventTypes } from '../../WorkerEvent';
-import ServerDispatcher from '../ServerDispatcher';
-import ClientDispatcher from '../ClientDispatcher';
+import WorkerEvent, { NativeEventType } from '../../WorkerEvent';
+import SharedServerDispatcher from '../ServerDispatcher';
+import SharedClientDispatcher from '../ClientDispatcher';
 import { EventTarget, MessagePortBase } from '../../../tests/stubs';
 
-describe('ServerDispatcher', () => {
+describe('SharedServerDispatcher', () => {
   let worker;
   let dispatcher;
 
   beforeEach(() => {
     worker = new MessagePortBase();
-    dispatcher = new ServerDispatcher(worker);
+    dispatcher = new SharedServerDispatcher(worker);
   });
 
   it('should add listeners to events', () => {
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.ERROR,
+      NativeEventType.ERROR,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.LANGUAGECHANGE,
+      NativeEventType.LANGUAGECHANGE,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.ONLINE,
+      NativeEventType.ONLINE,
       expect.any(Function),
     );
     expect(worker.addEventListener).toHaveBeenCalledWith(
-      NativeEventTypes.OFFLINE,
+      NativeEventType.OFFLINE,
       expect.any(Function),
     );
   });
@@ -117,14 +117,14 @@ describe('ServerDispatcher', () => {
 
     it('event should have client dispatcher', () => {
       const event = connectHandler.mock.calls[0][0];
-      expect(event.client).toBeInstanceOf(ClientDispatcher);
+      expect(event.client).toBeInstanceOf(SharedClientDispatcher);
     });
   });
 
   describe('When creating without args', () => {
     beforeEach(() => {
       global.self = new EventTarget();
-      dispatcher = new ServerDispatcher();
+      dispatcher = new SharedServerDispatcher();
     });
 
     it('should use `self` thinking its SharedWorkerGlobalScope', () => {
