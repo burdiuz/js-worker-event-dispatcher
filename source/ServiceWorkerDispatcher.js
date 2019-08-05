@@ -12,10 +12,17 @@ const getServiceWorker = async () => {
 
 const createTarget = () => {
   const channel = new MessageChannel();
+  let neutered = false;
 
   return {
     postMessage: async (message) => {
       const worker = await getServiceWorker();
+
+      if (neutered) {
+        return worker.postMessage(message);
+      }
+
+      neutered = true;
 
       return worker.postMessage(message, [channel.port2]);
     },

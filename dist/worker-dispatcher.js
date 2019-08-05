@@ -817,9 +817,16 @@
 
   const createTarget = () => {
     const channel = new MessageChannel();
+    let neutered = false;
     return {
       postMessage: async message => {
         const worker = await getServiceWorker();
+
+        if (neutered) {
+          return worker.postMessage(message);
+        }
+
+        neutered = true;
         return worker.postMessage(message, [channel.port2]);
       },
 
@@ -837,9 +844,7 @@
       close: () => {
         channel.port1.close();
       },
-      addEventListener: (...args) => {
-        return channel.port1.addEventListener(...args);
-      }
+      addEventListener: (...args) => channel.port1.addEventListener(...args)
     };
   };
   /**
