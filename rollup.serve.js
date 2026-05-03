@@ -1,7 +1,7 @@
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 
-import { plugins, umdConfig, DESTINATION_FOLDER } from './rollup.helpers';
+import { plugins, umdConfig, DESTINATION_FOLDER } from './rollup.helpers.js';
 
 export default {
   ...umdConfig,

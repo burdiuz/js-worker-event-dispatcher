@@ -1,0 +1,41 @@
+import { Event as BaseEvent } from '@actualwave/event-dispatcher';
+import type { IEventDispatcher } from '@actualwave/event-dispatcher';
+export declare const NativeEventType: {
+    readonly CONNECT: "connect";
+    readonly MESSAGE: "message";
+    readonly ERROR: "error";
+    readonly MESSAGEERROR: "messageerror";
+    readonly LANGUAGECHANGE: "languagechange";
+    readonly ONLINE: "online";
+    readonly OFFLINE: "offline";
+    readonly INSTALL: "install";
+    readonly ACTIVATE: "activate";
+    readonly FETCH: "fetch";
+    readonly SYNC: "sync";
+    readonly PUSH: "push";
+};
+export type NativeEventTypeValue = (typeof NativeEventType)[keyof typeof NativeEventType];
+declare class WorkerEvent extends BaseEvent {
+    static readonly CONNECT: "worker:connect";
+    static readonly MESSAGE: "worker:message";
+    static readonly ERROR: "worker:error";
+    static readonly MESSAGEERROR: "worker:messageerror";
+    static readonly LANGUAGECHANGE: "worker:languagechange";
+    static readonly ONLINE: "worker:online";
+    static readonly OFFLINE: "worker:offline";
+    static readonly INSTALL: "worker:install";
+    static readonly ACTIVATE: "worker:activate";
+    static readonly FETCH: "worker:fetch";
+    static readonly SYNC: "worker:sync";
+    static readonly PUSH: "worker:push";
+    nativeEvent: unknown;
+    client: unknown;
+    constructor(type: string, data: unknown, nativeEvent: unknown, client?: unknown);
+}
+export type NativeEventHandler = (event: globalThis.Event) => void;
+export declare const getWorkerEventType: (type: string) => string;
+export declare const dispatchWorkerEvent: (type: string, source: EventTarget, target: IEventDispatcher) => () => void;
+export declare const dispatchWorkerEvents: (source: EventTarget, target: IEventDispatcher) => () => void;
+export declare const dispatchServiceWorkerEvents: (source: EventTarget, target: IEventDispatcher) => () => void;
+export declare const dispatchWorkerErrorEvent: (source: EventTarget, target: IEventDispatcher) => () => void;
+export default WorkerEvent;

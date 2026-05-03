@@ -1,0 +1,13 @@
+import type { EventProcessor } from '@actualwave/event-dispatcher';
+import DedicatedWorkerDispatcher from '../DedicatedWorkerDispatcher';
+import SharedWorkerDispatcher from '../SharedWorkerDispatcher';
+import SharedClientDispatcher from '../sharedWorker/ClientDispatcher';
+import SharedServerDispatcher from '../sharedWorker/ServerDispatcher';
+import ServiceWorkerDispatcher from '../ServiceWorkerDispatcher';
+import ServiceClientDispatcher from '../serviceWorker/ClientDispatcher';
+import ServiceServerDispatcher from '../serviceWorker/ServerDispatcher';
+export declare const createForDedicatedWorker: (target?: Worker | string, receiverEventPreprocessor?: EventProcessor | null, senderEventPreprocessor?: EventProcessor | null) => DedicatedWorkerDispatcher;
+export declare const createForSharedWorker: (target: SharedWorker | string, receiverEventPreprocessor?: EventProcessor | null, senderEventPreprocessor?: EventProcessor | null) => SharedWorkerDispatcher;
+export declare const createForServiceWorker: (receiverEventPreprocessor?: EventProcessor | null, senderEventPreprocessor?: EventProcessor | null) => ServiceWorkerDispatcher;
+export declare const create: (target: Worker | SharedWorker | MessagePort | EventTarget | string | undefined, type?: string, receiverEventPreprocessor?: EventProcessor | null, senderEventPreprocessor?: EventProcessor | null) => DedicatedWorkerDispatcher | SharedWorkerDispatcher | SharedServerDispatcher | SharedClientDispatcher | ServiceWorkerDispatcher | ServiceServerDispatcher | ServiceClientDispatcher;
+export declare const createForSelf: (receiverEventPreprocessor?: EventProcessor | null, senderEventPreprocessor?: EventProcessor | null) => DedicatedWorkerDispatcher | ServiceServerDispatcher | SharedServerDispatcher;
